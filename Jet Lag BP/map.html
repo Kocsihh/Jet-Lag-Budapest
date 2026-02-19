@@ -220,14 +220,6 @@
             }
         ];
 
-        const bpBoundaryCoords = [
-            { lat: 47.613, lng: 19.053 }, { lat: 47.600, lng: 19.120 }, { lat: 47.585, lng: 19.160 },
-            { lat: 47.560, lng: 19.240 }, { lat: 47.530, lng: 19.330 }, { lat: 47.490, lng: 19.345 },
-            { lat: 47.435, lng: 19.260 }, { lat: 47.385, lng: 19.200 }, { lat: 47.350, lng: 19.160 },
-            { lat: 47.365, lng: 19.040 }, { lat: 47.410, lng: 18.980 }, { lat: 47.445, lng: 18.915 },
-            { lat: 47.510, lng: 18.930 }, { lat: 47.550, lng: 18.900 }, { lat: 47.590, lng: 18.960 },
-            { lat: 47.613, lng: 19.053 }
-        ];
 
         function initMap() {
             const stationOnlyStyle = [
@@ -250,7 +242,6 @@
                 clickableIcons: false
             });
 
-            drawBudapestOutline();
 
             // Metrók
             metroData.forEach(line => {
@@ -303,18 +294,6 @@
             }
         }
 
-        function drawBudapestOutline() {
-            new google.maps.Polygon({
-                paths: bpBoundaryCoords,
-                strokeColor: "#ffffff",
-                strokeOpacity: 0.3,
-                strokeWeight: 2,
-                fillColor: "#ffffff",
-                fillOpacity: 0.03,
-                map: map,
-                clickable: false
-            });
-        }
 
         // --- ÚJ FUNKCIÓ: POSSIBLE HIDER LOCATIONS ---
         function togglePossibleHiders() {
