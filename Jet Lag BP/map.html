@@ -155,6 +155,7 @@
         let districtPolygons = [];
         let districtsVisible = false;
         let districtData = null;
+        let districtStates = {}; // Kerületnév -> állapot (0: semleges, 1: igen, 2: nem)
 
         const bpCenter = { lat: 47.4979, lng: 19.0402 };
 
@@ -399,6 +400,15 @@
                     const geometry = feature.geometry;
                     if (!geometry) return;
 
+                    const districtName = feature.properties.name || feature.properties.short_name;
+                    const state = districtStates[districtName] || 0;
+
+                    let color = "#ffffff";
+                    let opacity = 0.05;
+
+                    if (state === 1) { color = "#00ff00"; opacity = 0.3; }
+                    else if (state === 2) { color = "#ff0000"; opacity = 0.3; }
+
                     const polygonData = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
 
                     polygonData.forEach(poly => {
@@ -409,11 +419,32 @@
                             strokeColor: "#ffffff",
                             strokeOpacity: 0.5,
                             strokeWeight: 1,
-                            fillColor: "#ffffff",
-                            fillOpacity: 0.05,
+                            fillColor: color,
+                            fillOpacity: opacity,
                             map: map,
-                            clickable: false
+                            clickable: true
                         });
+
+                        polygon.addListener('click', () => {
+                            let currentState = districtStates[districtName] || 0;
+                            let newState = (currentState + 1) % 3;
+                            districtStates[districtName] = newState;
+
+                            // Frissítjük az összes polygont ehhez a kerülethez (MultiPolygon miatt lehet több)
+                            const allSameDist = districtPolygons.filter(p => p.get('districtName') === districtName);
+
+                            let nColor = "#ffffff";
+                            let nOpacity = 0.05;
+                            if (newState === 1) { nColor = "#00ff00"; nOpacity = 0.3; }
+                            else if (newState === 2) { nColor = "#ff0000"; nOpacity = 0.3; }
+
+                            allSameDist.forEach(p => {
+                                p.setOptions({ fillColor: nColor, fillOpacity: nOpacity });
+                            });
+                            saveState();
+                        });
+
+                        polygon.set('districtName', districtName);
                         districtPolygons.push(polygon);
                     });
                 });
@@ -655,7 +686,8 @@
                     pointB: thermoState.pointB ? { lat: thermoState.pointB.lat(), lng: thermoState.pointB.lng() } : null,
                     isSwapped: thermoState.zones.length > 0 && thermoState.zones[0].get('fillColor') === "#FF0000" // Egyszerű csekk
                 },
-                districtsVisible: districtsVisible
+                districtsVisible: districtsVisible,
+                districtStates: districtStates
             };
             localStorage.setItem('jetLagState', JSON.stringify(state));
         }
@@ -692,6 +724,10 @@
                 drawTemperatureZones();
                 if (state.thermo.isSwapped) swapColors();
                 document.getElementById('swapBtn').style.display = 'block';
+            }
+
+            if (state.districtStates) {
+                districtStates = state.districtStates;
             }
 
             if (state.districtsVisible) {
