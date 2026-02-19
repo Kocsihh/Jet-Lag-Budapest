@@ -119,6 +119,7 @@
 
     <div class="controls">
         <button class="btn-toggle" id="tramBtn" onclick="toggleTrams()">Villamosok: BE</button>
+        <button class="btn-toggle" id="districtBtn" onclick="toggleDistricts()">Kerületek: KI</button>
 
         <!-- Radarok -->
         <button class="btn-radar" onclick="drawRadar(500)">R 500m</button>
@@ -149,6 +150,11 @@
         // Új változók a megállókhoz
         let hiderCircles = [];
         let hidersVisible = false;
+
+        // Új változók a kerületekhez
+        let districtPolygons = [];
+        let districtsVisible = false;
+        let districtData = null;
 
         const bpCenter = { lat: 47.4979, lng: 19.0402 };
 
@@ -281,6 +287,17 @@
                     calculateAndPlacePointB(e.latLng);
                 }
             });
+
+            loadDistrictData();
+        }
+
+        async function loadDistrictData() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/mihalyTothUni/budapest_districts/main/keruletek.geojson');
+                districtData = await response.json();
+            } catch (e) {
+                console.error("Hiba a kerület adatok betöltésekor:", e);
+            }
         }
 
         function drawBudapestOutline() {
@@ -352,10 +369,81 @@
             hidersVisible = false;
         }
 
+        // --- KERÜLETEK FUNKCIÓK ---
+        function toggleDistricts() {
+            if (districtsVisible) {
+                clearDistricts();
+            } else {
+                drawDistricts();
+            }
+            saveState();
+        }
+
+        function drawDistricts() {
+            console.log("drawDistricts meghívva, adatok állapota:", !!districtData);
+            if (!districtData) {
+                updateStatus("Kerület adatok betöltése folyamatban... Próbáld újra pár mp múlva.");
+                // Próbáljuk meg újra betölteni ha korábban hiba volt
+                loadDistrictData();
+                return;
+            }
+
+            try {
+                // Megelőzzük a duplikálást: töröljük a régit, mielőtt újat rajzolunk
+                if (districtPolygons.length > 0) {
+                    districtPolygons.forEach(p => p.setMap(null));
+                    districtPolygons = [];
+                }
+
+                districtData.features.forEach(feature => {
+                    const geometry = feature.geometry;
+                    if (!geometry) return;
+
+                    const polygonData = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+
+                    polygonData.forEach(poly => {
+                        if (!poly || !poly.length) return;
+
+                        const polygon = new google.maps.Polygon({
+                            paths: poly.map(ring => ring.map(coord => ({ lng: coord[0], lat: coord[1] }))),
+                            strokeColor: "#ffffff",
+                            strokeOpacity: 0.5,
+                            strokeWeight: 1,
+                            fillColor: "#ffffff",
+                            fillOpacity: 0.05,
+                            map: map,
+                            clickable: false
+                        });
+                        districtPolygons.push(polygon);
+                    });
+                });
+
+                districtsVisible = true;
+                const btn = document.getElementById('districtBtn');
+                if (btn) {
+                    btn.innerText = "Kerületek: BE";
+                    btn.classList.remove('off');
+                }
+                updateStatus(""); // Töröljük a hibaüzenetet ha volt
+                console.log(`Sikeresen kirajzolva ${districtPolygons.length} polygon.`);
+            } catch (err) {
+                console.error("Hiba a kerületek kirajzolásakor:", err);
+                updateStatus("Hiba történt a rajzoláskor.");
+            }
+        }
+
+        function clearDistricts() {
+            districtPolygons.forEach(p => p.setMap(null));
+            districtPolygons = [];
+            districtsVisible = false;
+            document.getElementById('districtBtn').innerText = "Kerületek: KI";
+            document.getElementById('districtBtn').classList.add('off');
+        }
+
         // --- HŐMÉRŐ FUNKCIÓK ---
 
         function startThermometer(radius) {
-            clearAll();
+            clearThermometer();
             thermoState.active = true;
             thermoState.radius = radius;
             thermoState.step = 1;
@@ -549,6 +637,7 @@
             clearThermometer();
             clearHiders();
             localStorage.removeItem('jetLagState');
+            // Kerületek nem kerülnek törlésre a felhasználó kérésére
         }
 
         // --- PERSISTENCE ---
@@ -565,7 +654,8 @@
                     pointA: thermoState.pointA ? { lat: thermoState.pointA.lat(), lng: thermoState.pointA.lng() } : null,
                     pointB: thermoState.pointB ? { lat: thermoState.pointB.lat(), lng: thermoState.pointB.lng() } : null,
                     isSwapped: thermoState.zones.length > 0 && thermoState.zones[0].get('fillColor') === "#FF0000" // Egyszerű csekk
-                }
+                },
+                districtsVisible: districtsVisible
             };
             localStorage.setItem('jetLagState', JSON.stringify(state));
         }
@@ -602,6 +692,24 @@
                 drawTemperatureZones();
                 if (state.thermo.isSwapped) swapColors();
                 document.getElementById('swapBtn').style.display = 'block';
+            }
+
+            if (state.districtsVisible) {
+                // Várunk kicsit, hogy az adatok biztosan betöltődjenek
+                setTimeout(() => {
+                    if (districtData) drawDistricts();
+                    else {
+                        // Ha még nincs kész, újra megpróbáljuk
+                        let checkInt = setInterval(() => {
+                            if (districtData) {
+                                drawDistricts();
+                                clearInterval(checkInt);
+                            }
+                        }, 500);
+                    }
+                }, 500);
+            } else {
+                document.getElementById('districtBtn').classList.add('off');
             }
         }
 
