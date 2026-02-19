@@ -408,8 +408,8 @@
                     let color = "#ffffff";
                     let opacity = 0.05;
 
-                    if (state === 1) { color = "#00ff00"; opacity = 0.3; }
-                    else if (state === 2) { color = "#ff0000"; opacity = 0.3; }
+                    if (state === 1) { color = "#00ff00"; opacity = 0.15; }
+                    else if (state === 2) { color = "#ff0000"; opacity = 0.15; }
 
                     const polygonData = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
 
@@ -424,7 +424,8 @@
                             fillColor: color,
                             fillOpacity: opacity,
                             map: map,
-                            clickable: districtEditing
+                            clickable: districtEditing,
+                            zIndex: 1
                         });
 
                         polygon.addListener('click', () => {
@@ -437,8 +438,8 @@
 
                             let nColor = "#ffffff";
                             let nOpacity = 0.05;
-                            if (newState === 1) { nColor = "#00ff00"; nOpacity = 0.3; }
-                            else if (newState === 2) { nColor = "#ff0000"; nOpacity = 0.3; }
+                            if (newState === 1) { nColor = "#00ff00"; nOpacity = 0.15; }
+                            else if (newState === 2) { nColor = "#ff0000"; nOpacity = 0.15; }
 
                             allSameDist.forEach(p => {
                                 p.setOptions({ fillColor: nColor, fillOpacity: nOpacity });
@@ -637,8 +638,9 @@
             const radarCenter = center || seekerMarker.getPosition();
             const circle = new google.maps.Circle({
                 strokeColor: color, strokeOpacity: 0.8, strokeWeight: 2,
-                fillColor: color, fillOpacity: 0.1,
-                map: map, center: radarCenter, radius: radius, clickable: true
+                fillColor: color, fillOpacity: 0.35,
+                map: map, center: radarCenter, radius: radius, clickable: true,
+                zIndex: 1000
             });
 
             circle.addListener('click', () => {
