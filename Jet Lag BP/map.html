@@ -271,7 +271,6 @@
 
             seekerMarker.addListener('dragend', () => {
                 saveState();
-                if (radarCircle) drawRadar(radarCircle.getRadius());
             });
 
             map.addListener("click", (e) => {
@@ -500,14 +499,15 @@
             }
         }
 
-        function drawRadar(radius) {
+        function drawRadar(radius, center = null) {
             clearRadar();
+            const radarCenter = center || seekerMarker.getPosition();
             radarCircle = new google.maps.Circle({
                 strokeColor: "#ff4500", strokeOpacity: 0.8, strokeWeight: 2,
                 fillColor: "#ff4500", fillOpacity: 0.1,
-                map: map, center: seekerMarker.getPosition(), radius: radius, clickable: false
+                map: map, center: radarCenter, radius: radius, clickable: false
             });
-            map.panTo(seekerMarker.getPosition());
+            map.panTo(radarCenter);
             saveState();
         }
 
@@ -548,6 +548,7 @@
             const state = {
                 seekerPos: { lat: seekerMarker.getPosition().lat(), lng: seekerMarker.getPosition().lng() },
                 radarRadius: radarCircle ? radarCircle.getRadius() : null,
+                radarCenter: radarCircle ? { lat: radarCircle.getCenter().lat(), lng: radarCircle.getCenter().lng() } : null,
                 thermo: {
                     pointA: thermoState.pointA ? { lat: thermoState.pointA.lat(), lng: thermoState.pointA.lng() } : null,
                     pointB: thermoState.pointB ? { lat: thermoState.pointB.lat(), lng: thermoState.pointB.lng() } : null,
@@ -566,8 +567,8 @@
                 seekerMarker.setPosition(state.seekerPos);
             }
 
-            if (state.radarRadius) {
-                drawRadar(state.radarRadius);
+            if (state.radarRadius && state.radarCenter) {
+                drawRadar(state.radarRadius, new google.maps.LatLng(state.radarCenter.lat, state.radarCenter.lng));
             }
 
             if (state.thermo && state.thermo.pointA && state.thermo.pointB) {
