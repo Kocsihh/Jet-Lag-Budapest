@@ -142,7 +142,7 @@
     <script>
         let map;
         let seekerMarker;
-        let radarCircle = null;
+        let radarCircles = [];
         let tramLines = [];
         let tramsVisible = true;
 
@@ -500,22 +500,20 @@
         }
 
         function drawRadar(radius, center = null) {
-            clearRadar();
             const radarCenter = center || seekerMarker.getPosition();
-            radarCircle = new google.maps.Circle({
+            const circle = new google.maps.Circle({
                 strokeColor: "#ff4500", strokeOpacity: 0.8, strokeWeight: 2,
                 fillColor: "#ff4500", fillOpacity: 0.1,
                 map: map, center: radarCenter, radius: radius, clickable: false
             });
+            radarCircles.push(circle);
             map.panTo(radarCenter);
             saveState();
         }
 
         function clearRadar() {
-            if (radarCircle) {
-                radarCircle.setMap(null);
-                radarCircle = null;
-            }
+            radarCircles.forEach(c => c.setMap(null));
+            radarCircles = [];
             saveState();
         }
 
@@ -547,8 +545,10 @@
         function saveState() {
             const state = {
                 seekerPos: { lat: seekerMarker.getPosition().lat(), lng: seekerMarker.getPosition().lng() },
-                radarRadius: radarCircle ? radarCircle.getRadius() : null,
-                radarCenter: radarCircle ? { lat: radarCircle.getCenter().lat(), lng: radarCircle.getCenter().lng() } : null,
+                radars: radarCircles.map(c => ({
+                    radius: c.getRadius(),
+                    center: { lat: c.getCenter().lat(), lng: c.getCenter().lng() }
+                })),
                 thermo: {
                     pointA: thermoState.pointA ? { lat: thermoState.pointA.lat(), lng: thermoState.pointA.lng() } : null,
                     pointB: thermoState.pointB ? { lat: thermoState.pointB.lat(), lng: thermoState.pointB.lng() } : null,
@@ -567,8 +567,10 @@
                 seekerMarker.setPosition(state.seekerPos);
             }
 
-            if (state.radarRadius && state.radarCenter) {
-                drawRadar(state.radarRadius, new google.maps.LatLng(state.radarCenter.lat, state.radarCenter.lng));
+            if (state.radars && Array.isArray(state.radars)) {
+                state.radars.forEach(r => {
+                    drawRadar(r.radius, new google.maps.LatLng(r.center.lat, r.center.lng));
+                });
             }
 
             if (state.thermo && state.thermo.pointA && state.thermo.pointB) {
