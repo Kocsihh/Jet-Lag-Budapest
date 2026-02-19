@@ -330,7 +330,7 @@ const tramData = [
     }
 
     function calculateAndPlacePointB(clickLatLng) {
-        const heading = google.maps.geometry.spherical.(computeHeadingthermoState.pointA, clickLatLng);
+        const heading = google.maps.geometry.spherical.computeHeading(thermoState.pointA, clickLatLng);
         const exactPointB = google.maps.geometry.spherical.computeOffset(thermoState.pointA, thermoState.radius, heading);
         thermoState.pointB = exactPointB;
 
