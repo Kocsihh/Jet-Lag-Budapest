@@ -499,13 +499,24 @@
             }
         }
 
-        function drawRadar(radius, center = null) {
+        function drawRadar(radius, center = null, color = "#ff4500") {
             const radarCenter = center || seekerMarker.getPosition();
             const circle = new google.maps.Circle({
-                strokeColor: "#ff4500", strokeOpacity: 0.8, strokeWeight: 2,
-                fillColor: "#ff4500", fillOpacity: 0.1,
-                map: map, center: radarCenter, radius: radius, clickable: false
+                strokeColor: color, strokeOpacity: 0.8, strokeWeight: 2,
+                fillColor: color, fillOpacity: 0.1,
+                map: map, center: radarCenter, radius: radius, clickable: true
             });
+
+            circle.addListener('click', () => {
+                const currentColor = circle.get('fillColor');
+                const newColor = currentColor === "#ff4500" ? "#00ff00" : "#ff4500";
+                circle.setOptions({
+                    fillColor: newColor,
+                    strokeColor: newColor
+                });
+                saveState();
+            });
+
             radarCircles.push(circle);
             map.panTo(radarCenter);
             saveState();
@@ -547,7 +558,8 @@
                 seekerPos: { lat: seekerMarker.getPosition().lat(), lng: seekerMarker.getPosition().lng() },
                 radars: radarCircles.map(c => ({
                     radius: c.getRadius(),
-                    center: { lat: c.getCenter().lat(), lng: c.getCenter().lng() }
+                    center: { lat: c.getCenter().lat(), lng: c.getCenter().lng() },
+                    color: c.get('fillColor')
                 })),
                 thermo: {
                     pointA: thermoState.pointA ? { lat: thermoState.pointA.lat(), lng: thermoState.pointA.lng() } : null,
@@ -569,7 +581,7 @@
 
             if (state.radars && Array.isArray(state.radars)) {
                 state.radars.forEach(r => {
-                    drawRadar(r.radius, new google.maps.LatLng(r.center.lat, r.center.lng));
+                    drawRadar(r.radius, new google.maps.LatLng(r.center.lat, r.center.lng), r.color);
                 });
             }
 
