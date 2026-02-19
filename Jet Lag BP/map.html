@@ -120,6 +120,7 @@
     <div class="controls">
         <button class="btn-toggle" id="tramBtn" onclick="toggleTrams()">Villamosok: BE</button>
         <button class="btn-toggle" id="districtBtn" onclick="toggleDistricts()">Kerületek: KI</button>
+        <button class="btn-toggle off" id="editDistBtn" onclick="toggleDistrictEditing()">Szerkesztés: KI</button>
 
         <!-- Radarok -->
         <button class="btn-radar" onclick="drawRadar(500)">R 500m</button>
@@ -154,6 +155,7 @@
         // Új változók a kerületekhez
         let districtPolygons = [];
         let districtsVisible = false;
+        let districtEditing = false;
         let districtData = null;
         let districtStates = {}; // Kerületnév -> állapot (0: semleges, 1: igen, 2: nem)
 
@@ -422,7 +424,7 @@
                             fillColor: color,
                             fillOpacity: opacity,
                             map: map,
-                            clickable: true
+                            clickable: districtEditing
                         });
 
                         polygon.addListener('click', () => {
@@ -469,6 +471,19 @@
             districtsVisible = false;
             document.getElementById('districtBtn').innerText = "Kerületek: KI";
             document.getElementById('districtBtn').classList.add('off');
+        }
+
+        function toggleDistrictEditing() {
+            districtEditing = !districtEditing;
+            const btn = document.getElementById('editDistBtn');
+            btn.innerText = districtEditing ? "Szerkesztés: BE" : "Szerkesztés: KI";
+            btn.classList.toggle('off', !districtEditing);
+
+            // Frissítjük a létező polygonokat
+            districtPolygons.forEach(p => {
+                p.setOptions({ clickable: districtEditing });
+            });
+            saveState();
         }
 
         // --- HŐMÉRŐ FUNKCIÓK ---
@@ -687,6 +702,7 @@
                     isSwapped: thermoState.zones.length > 0 && thermoState.zones[0].get('fillColor') === "#FF0000" // Egyszerű csekk
                 },
                 districtsVisible: districtsVisible,
+                districtEditing: districtEditing,
                 districtStates: districtStates
             };
             localStorage.setItem('jetLagState', JSON.stringify(state));
@@ -728,6 +744,13 @@
 
             if (state.districtStates) {
                 districtStates = state.districtStates;
+            }
+
+            if (state.districtEditing !== undefined) {
+                districtEditing = state.districtEditing;
+                const btn = document.getElementById('editDistBtn');
+                btn.innerText = districtEditing ? "Szerkesztés: BE" : "Szerkesztés: KI";
+                btn.classList.toggle('off', !districtEditing);
             }
 
             if (state.districtsVisible) {
