@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jet Lag Budapest: Hunyó Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #0a192f; color: white; padding: 10px; margin: 0; }
+        h1 { color: #64ffda; font-size: 1.5em; margin: 10px 0; }
+        .stats { color: #8892b0; font-size: 0.85em; margin-bottom: 20px; }
+
+        /* Timer Section */
+        #timer-container { 
+            background: #112240; border: 2px solid #64ffda; padding: 15px; 
+            margin: 10px auto; max-width: 400px; border-radius: 12px;
+            display: none;
+        }
+        #timer-display { font-size: 3em; font-weight: bold; color: #64ffda; font-family: monospace; }
+        .timer-msg { font-style: italic; color: #ccd6f6; margin-bottom: 5px; }
+
+        /* Question Console */
+        .console { background: #112240; padding: 15px; border-radius: 12px; max-width: 400px; margin: 0 auto 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #64ffda; }
+        select, input { width: 100%; padding: 10px; border-radius: 5px; border: none; background: #233554; color: white; margin-bottom: 15px; box-sizing: border-box; }
+        
+        button { 
+            background: #64ffda; color: #0a192f; border: none; padding: 12px 20px; 
+            font-size: 1em; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;
+            transition: 0.3s;
+        }
+        button:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        /* Curse Tracker */
+        .curse-area { border-top: 1px solid #233554; padding-top: 15px; margin-top: 20px; }
+        .curse-btn { background: #f44336; color: white; margin-bottom: 10px; }
+        
+        /* History Log */
+        #log { max-width: 400px; margin: 20px auto; text-align: left; font-size: 0.85em; background: #020c1b; padding: 10px; border-radius: 8px; color: #8892b0; }
+        .log-entry { border-bottom: 1px dashed #233554; padding: 5px 0; }
+    </style>
+</head>
+<body>
+
+    <h1>HUNYÓ DASHBOARD</h1>
+    <div class="stats">Várakozási idő és kérdéskövető</div>
+
+    <!-- Timer Section -->
+    <div id="timer-container">
+        <div class="timer-msg" id="timer-label">Várakozás a következő kérdésig...</div>
+        <div id="timer-display">05:00</div>
+    </div>
+
+    <!-- Question Console -->
+    <div id="main-console" class="console">
+        <label>1. Kérdés típusa:</label>
+        <select id="q-type">
+            <option value="normal">Radar (500m / 1km / 2km)</option>
+            <option value="normal">Hőmérő (Melegszik / Hűl)</option>
+            <option value="normal">Egyezés (Vonal / Kerület)</option>
+            <option value="photo">Fotó Kérés (10 perc büntetés!)</option>
+        </select>
+
+        <label>2. Bújó válasza:</label>
+        <input type="text" id="q-answer" placeholder="Pl: Igen / 1.2 km / Kép elküldve">
+
+        <button id="submit-btn" onclick="logAnswer()">VÁLASZ RÖGZÍTÉSE ÉS VÁRAKOZÁS</button>
+    </div>
+
+    <!-- Active Curse Section -->
+    <div class="console curse-area">
+        <label>Aktív Átok (Bújó játszotta ki):</label>
+        <button class="curse-btn" onclick="startCurseTimer(5)">5 perc Átok (pl. Várakozás)</button>
+        <button class="curse-btn" onclick="startCurseTimer(10)">10 perc Átok (pl. Zászlókeresés)</button>
+    </div>
+
+    <div id="log">
+        <strong>ELŐZMÉNYEK:</strong>
+        <div id="log-content"></div>
+    </div>
+
+    <script>
+        let countdown;
+        
+        function logAnswer() {
+            const type = document.getElementById('q-type').value;
+            const answer = document.getElementById('q-answer').value;
+            
+            if(!answer) { alert("Írd be a választ!"); return; }
+
+            // Logolás
+            const now = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `[${now}] <b>${answer}</b> (Típus: ${type === 'photo' ? 'Fotó' : 'Sima'})`;
+            document.getElementById('log-content').prepend(entry);
+
+            // Mezők ürítése
+            document.getElementById('q-answer').value = '';
+
+            // Timer indítása
+            const waitMinutes = type === 'photo' ? 10 : 5;
+            startTimer(waitMinutes, "Bújó válaszolt. Kötelező várakozás:");
+        }
+
+        function startTimer(minutes, labelText) {
+            clearInterval(countdown);
+            document.getElementById('main-choice-area')?.classList.add('disabled'); // if choice area existed
+            document.getElementById('main-console').style.opacity = "0.3";
+            document.getElementById('submit-btn').disabled = true;
+            
+            const container = document.getElementById('timer-container');
+            const display = document.getElementById('timer-display');
+            const label = document.getElementById('timer-label');
+            
+            label.innerText = labelText;
+            container.style.display = 'block';
+
+            let seconds = minutes * 60;
+            
+            countdown = setInterval(() => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    container.style.display = 'none';
+                    document.getElementById('main-console').style.opacity = "1";
+                    document.getElementById('submit-btn').disabled = false;
+                    alert("Lejárt a várakozási idő! Új kérdést tehettek fel.");
+                }
+                seconds--;
+            }, 1000);
+        }
+
+        function startCurseTimer(minutes) {
+            if(confirm(`Elkezditek teljesíteni az átkot (${minutes} perc)?`)) {
+                startTimer(minutes, "ÁTOK FOLYAMATBAN (Nincs mozgás/kérdés):");
+            }
+        }
+    </script>
+</body>
+</html>
