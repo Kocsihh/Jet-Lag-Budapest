@@ -13,8 +13,35 @@
     <a href="./index.html" class="home-btn">🏠</a>
     <header>
         <h1>Hunyó Dashboard</h1>
+        <div class="game-controls">
+            <button id="btn-start-game" class="session-btn start" onclick="startGame()">Játék Indítása</button>
+            <button id="btn-end-game" class="session-btn end" onclick="endGame()" style="display: none;">Játék
+                Vége</button>
+        </div>
         <div class="stats">Válassz kérdést és rögzítsd a választ!</div>
     </header>
+
+    <!-- Outcome Selection Modal -->
+    <div id="outcome-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="outcome-q-name">Kérdés neve</h2>
+            <div class="outcome-options">
+                <button class="outcome-btn" onclick="handleOutcome('answered')">
+                    <strong>VÁLASZOLT</strong>
+                    <span>Timer + Kérdés kuka</span>
+                </button>
+                <button class="outcome-btn" onclick="handleOutcome('veto')">
+                    <strong>VÉTÓ</strong>
+                    <span>Timer + Kérdés marad</span>
+                </button>
+                <button class="outcome-btn" onclick="handleOutcome('superveto')">
+                    <strong>SZUPER VÉTÓ</strong>
+                    <span>Timer + Kérdés kuka</span>
+                </button>
+            </div>
+            <button class="modal-cancel" onclick="closeOutcomeModal()">Mégse</button>
+        </div>
+    </div>
 
     <!-- Timer Section -->
     <div id="timer-container">
@@ -31,33 +58,33 @@
         <section class="category-section">
             <div class="category-title">🤝 Egyeztető Kérdések</div>
             <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Pest / Buda (3 lap)', 5)">
-                    <img src="assets/pest_buda.png" alt="P/B">
+                <button class="q-btn" onclick="askQuestion('Pest / Buda (3 lap)', 5, '2/2')">
                     <span>Pest / Buda</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 2</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Ugyanaz a villamosvonal?', 1)">
-                    <img src="assets/tram.png" alt="Tram">
-                    <span>Villi?</span>
+                <button class="q-btn" onclick="askQuestion('Ugyanaz a villamosvonal?', 5, '2/1')">
+                    <span>Ugyanaz a villamosvonal?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Ugyanaz a metróvonal?', 5)">
-                    <img src="assets/metro.png" alt="Metro">
-                    <span>Metró?</span>
+                <button class="q-btn" onclick="askQuestion('Ugyanaz a metróvonal?', 5, '2/1')">
+                    <span>Ugyanaz a metróvonal?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Ugyanaz a kerület?', 5)">
-                    <img src="assets/district.png" alt="Dist">
-                    <span>Kerület?</span>
+                <button class="q-btn" onclick="askQuestion('Ugyanaz a kerület?', 5, '2/1')">
+                    <span>Ugyanaz a Kerület?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Legközelebbi kórház?', 5)">
-                    <img src="assets/hospital.png" alt="Hosp">
-                    <span>Kórház?</span>
+                <button class="q-btn" onclick="askQuestion('Legközelebbi kórház?', 5, '2/1')">
+                    <span>Legközelebbi Kórház?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Legközelebbi mozi?', 5)">
-                    <img src="assets/cinema.png" alt="Cinema">
-                    <span>Mozi?</span>
+                <button class="q-btn" onclick="askQuestion('Legközelebbi mozi?', 5, '2/1')">
+                    <span>legközelebbi mozi?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Legközelebbi Meki?', 5)">
-                    <img src="assets/mcdonalds.png" alt="Meki">
-                    <span>Meki?</span>
+                <button class="q-btn" onclick="askQuestion('Legközelebbi Meki?', 5, '2/1')">
+                    <span>Legközelebbi Meki?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
             </div>
         </section>
@@ -66,23 +93,29 @@
         <section class="category-section">
             <div class="category-title">📏 Mérő Kérdések</div>
             <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Közelebb: Kórház?', 5)">
+                <button class="q-btn" onclick="askQuestion('Közelebb: Kórház?', 5, '2/1')">
                     <span>Kórház?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Mozi?', 5)">
+                <button class="q-btn" onclick="askQuestion('Közelebb: Mozi?', 5, '2/1')">
                     <span>Mozi?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Meki?', 5)">
+                <button class="q-btn" onclick="askQuestion('Közelebb: Meki?', 5, '2/1')">
                     <span>Meki?</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Reptér', 5)">
+                <button class="q-btn" onclick="askQuestion('Közelebb: Reptér', 5, '2/1')">
                     <span>Reptér</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Állatkert', 5)">
+                <button class="q-btn" onclick="askQuestion('Közelebb: Állatkert', 5, '2/1')">
                     <span>Állatkert</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Vidámpark', 5)">
+                <button class="q-btn" onclick="askQuestion('Közelebb: Vidámpark', 5, '2/1')">
                     <span>Vidámpark</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
             </div>
         </section>
@@ -91,9 +124,18 @@
         <section class="category-section">
             <div class="category-title">📡 Radar</div>
             <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Radar: 500m', 5)"><span>500m</span></button>
-                <button class="q-btn" onclick="askQuestion('Radar: 1km', 5)"><span>1km</span></button>
-                <button class="q-btn" onclick="askQuestion('Radar: Egyéni', 5)"><span>Egyéni</span></button>
+                <button class="q-btn" onclick="askQuestion('Radar: 500m', 5, '3/1')">
+                    <span>500m</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Radar: 1km', 5, '3/1')">
+                    <span>1km</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Radar: Egyéni', 5, '3/1')">
+                    <span>Egyéni</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
+                </button>
             </div>
         </section>
 
@@ -101,8 +143,14 @@
         <section class="category-section">
             <div class="category-title">🌡️ Hőmérő</div>
             <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Hőmérő: 2km', 5)"><span>2km</span></button>
-                <button class="q-btn" onclick="askQuestion('Hőmérő: 5km', 5)"><span>5km</span></button>
+                <button class="q-btn" onclick="askQuestion('Hőmérő: 2km', 5, '3/1')">
+                    <span>2km</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Hőmérő: 5km', 5, '3/1')">
+                    <span>5km</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
+                </button>
             </div>
         </section>
 
@@ -110,20 +158,29 @@
         <section class="category-section section-foto">
             <div class="category-title">📸 Fotó Kihívások</div>
             <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Fotó: Legmagasabb épület', 10)">
+                <button class="q-btn" onclick="askQuestion('Fotó: Legmagasabb épület', 10, '3/1')">
                     <span>Legmagasabb épület</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Közeli épület', 10)">
-                    <span>Közeli épület</span>
+                <button class="q-btn" onclick="askQuestion('Fotó: Az állomásról egy fotó', 10, '3/1')">
+                    <span>Állomás</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Égbolt (vízszintesen)', 10)">
+                <button class="q-btn" onclick="askQuestion('Fotó: Égbolt', 10, '2/1')">
                     <span>Égbolt</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Egy fa', 10)">
+                <button class="q-btn" onclick="askQuestion('Fotó: Egy fa', 10, '2/1')">
                     <span>Egy fa</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
                 </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Szelfi', 10)">
+                <button class="q-btn" onclick="askQuestion('Fotó: Szelfi', 10, '2/1')">
                     <span>Szelfi</span>
+                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Fotó: Legszélesebb út', 10, '3/1')">
+                    <span>Legszélesebb út</span>
+                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
                 </button>
             </div>
         </section>
@@ -141,24 +198,115 @@
     <script>
         let countdown;
         let lastAction = null;
+        let gameActive = JSON.parse(localStorage.getItem('jetLag_gameActive')) || false;
+        let exhaustedQuestions = JSON.parse(localStorage.getItem('jetLag_exhausted')) || [];
 
-        function askQuestion(qName, minutes) {
+        function startGame() {
+            if (confirm("Készen állsz az indulásra? A kérdések el fognak fogyni a játék során!")) {
+                gameActive = true;
+                exhaustedQuestions = [];
+                saveState();
+                updateUI();
+                addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), "--- JÁTÉK ELKEZDŐDÖTT ---");
+            }
+        }
+
+        function endGame() {
+            if (confirm("Biztosan befejezed a játékot? Minden kérdés újra elérhető lesz.")) {
+                gameActive = false;
+                exhaustedQuestions = [];
+                saveState();
+                updateUI();
+                addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), "--- JÁTÉK VÉGET ÉRT ---");
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('jetLag_gameActive', JSON.stringify(gameActive));
+            localStorage.setItem('jetLag_exhausted', JSON.stringify(exhaustedQuestions));
+        }
+
+        function updateUI() {
+            // Session buttons
+            document.getElementById('btn-start-game').style.display = gameActive ? 'none' : 'block';
+            document.getElementById('btn-end-game').style.display = gameActive ? 'block' : 'none';
+
+            // Question buttons exhaustion
+            const buttons = document.querySelectorAll('.q-btn');
+            buttons.forEach(btn => {
+                const onClickAttr = btn.getAttribute('onclick');
+                const qMatch = onClickAttr.match(/askQuestion\('([^']+)'/);
+                if (qMatch) {
+                    const qName = qMatch[1];
+                    if (exhaustedQuestions.includes(qName)) {
+                        btn.classList.add('exhausted');
+                    } else {
+                        btn.classList.remove('exhausted');
+                    }
+                }
+            });
+        }
+
+        let pendingQuestion = null;
+
+        function askQuestion(qName, minutes, reward = "") {
+            if (exhaustedQuestions.includes(qName)) return;
+
+            pendingQuestion = { qName, minutes, reward };
+            document.getElementById('outcome-q-name').innerText = qName;
+            document.getElementById('outcome-modal').style.display = 'flex';
+        }
+
+        function closeOutcomeModal() {
+            document.getElementById('outcome-modal').style.display = 'none';
+            pendingQuestion = null;
+        }
+
+        function handleOutcome(type) {
+            if (!pendingQuestion) return;
+            const { qName, minutes, reward } = pendingQuestion;
             const now = new Date();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeStr = now.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
 
-            // Save state for undo
             lastAction = {
                 name: qName,
                 timestamp: now,
-                minutes: minutes
+                minutes: minutes,
+                reward: reward,
+                wasExhaustedAdded: false,
+                outcomeType: type
             };
 
-            // Add to log
-            addLogEntry(timeStr, qName);
+            let logMsg = qName;
+            if (reward) logMsg += ` [${reward}]`;
 
-            // Start timer
-            startTimer(minutes, `Kérdezve: ${qName}`);
+            if (type === 'answered') {
+                logMsg += " (Válaszolt)";
+                if (gameActive) {
+                    exhaustedQuestions.push(qName);
+                    lastAction.wasExhaustedAdded = true;
+                }
+            } else if (type === 'veto') {
+                logMsg += " (Vétó)";
+                // Question stays available, just timer starts
+            } else if (type === 'superveto') {
+                logMsg += " (Szuper Vétó)";
+                if (gameActive) {
+                    exhaustedQuestions.push(qName);
+                    lastAction.wasExhaustedAdded = true;
+                }
+            }
+
+            if (gameActive) {
+                saveState();
+                updateUI();
+            }
+
+            addLogEntry(timeStr, logMsg);
+            startTimer(minutes, `Várakozás... [${logMsg}]`);
+            closeOutcomeModal();
         }
+
 
         function addLogEntry(time, text) {
             const entry = document.createElement('div');
@@ -207,10 +355,17 @@
             clearInterval(countdown);
             document.getElementById('timer-container').style.display = 'none';
             document.getElementById('main-grid').classList.remove('disabled');
+            document.getElementById('btn-veto').style.display = 'none';
         }
 
         function undoLast() {
             if (confirm("Biztosan visszavonod az utolsó kérdést?")) {
+                if (lastAction && lastAction.wasExhaustedAdded) {
+                    exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
+                    saveState();
+                    updateUI();
+                }
+
                 stopTimer();
                 const logContent = document.getElementById('log-content');
                 if (logContent.firstChild) {
@@ -223,10 +378,20 @@
         }
 
         function resetTimer() {
-            if (confirm("Biztosan manuálisan törlöd a timert?")) {
+            if (confirm("Biztosan manuálisan törlöd a timert? A jelenlegi kérdés újra elérhető lesz.")) {
+                if (lastAction && lastAction.wasExhaustedAdded) {
+                    exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
+                    saveState();
+                    updateUI();
+                }
                 stopTimer();
+                const qLabel = lastAction ? lastAction.name : "Időzítő";
+                addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), `--- RESET: ${qLabel} visszaállítva ---`);
             }
         }
+
+        // Init
+        updateUI();
     </script>
 </body>
 
