@@ -175,8 +175,8 @@ button:disabled {
 
 .card:hover {
     transform: translateY(-8px);
-    border-color: var(--accent);
-    box-shadow: 0 10px 25px rgba(100, 255, 218, 0.2);
+    border-color: var(--type-color, var(--accent));
+    box-shadow: 0 10px 25px var(--type-shadow, rgba(100, 255, 218, 0.2));
 }
 
 .card .type {
@@ -205,27 +205,33 @@ button:disabled {
 
 /* Color Coding by Type */
 .type-ido {
-    border-left: 4px solid var(--accent);
+    --type-color: var(--accent);
+    --type-shadow: rgba(100, 255, 218, 0.2);
+    border-left: 4px solid var(--type-color);
 }
 
 .type-ido .type {
-    color: var(--accent);
+    color: var(--type-color);
 }
 
 .type-atok {
-    border-left: 4px solid var(--danger);
+    --type-color: var(--danger);
+    --type-shadow: rgba(244, 67, 54, 0.2);
+    border-left: 4px solid var(--type-color);
 }
 
 .type-atok .type {
-    color: var(--danger);
+    color: var(--type-color);
 }
 
 .type-specialis {
-    border-left: 4px solid var(--warning);
+    --type-color: var(--warning);
+    --type-shadow: rgba(255, 204, 0, 0.2);
+    border-left: 4px solid var(--type-color);
 }
 
 .type-specialis .type {
-    color: var(--warning);
+    color: var(--type-color);
 }
 
 /* Cost Dots */
