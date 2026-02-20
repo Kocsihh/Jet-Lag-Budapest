@@ -224,6 +224,7 @@
         function saveState() {
             localStorage.setItem('jetLag_gameActive', JSON.stringify(gameActive));
             localStorage.setItem('jetLag_exhausted', JSON.stringify(exhaustedQuestions));
+            localStorage.setItem('jetLag_lastAction', JSON.stringify(lastAction));
         }
 
         function updateUI() {
@@ -297,8 +298,8 @@
                 }
             }
 
+            saveState();
             if (gameActive) {
-                saveState();
                 updateUI();
             }
 
@@ -318,7 +319,7 @@
             document.getElementById('log-count').innerText = `${count} bejegyzés`;
         }
 
-        function startTimer(minutes, labelText) {
+        function startTimer(minutes, labelText, endTimeOverride = null) {
             clearInterval(countdown);
 
             const container = document.getElementById('timer-container');
@@ -330,32 +331,39 @@
             container.style.display = 'block';
             grid.classList.add('disabled');
 
-            let seconds = minutes * 60;
+            let endTime = endTimeOverride || (Date.now() + minutes * 60 * 1000);
+
+            // Save timer state
+            localStorage.setItem('jetLag_timerEnd', endTime);
+            localStorage.setItem('jetLag_timerLabel', labelText);
 
             const updateDisplay = () => {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
+                const now = Date.now();
+                const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
                 display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (remaining <= 0) {
+                    stopTimer();
+                    // Don't alert if we're just loading a page where timer already expired
+                    if (!endTimeOverride || (endTimeOverride - now) > -2000) {
+                        alert("A várakozási idő lejárt! Új kérdést tehetsz fel.");
+                    }
+                }
             };
 
             updateDisplay();
-
-            countdown = setInterval(() => {
-                seconds--;
-                updateDisplay();
-
-                if (seconds <= 0) {
-                    stopTimer();
-                    alert("A várakozási idő lejárt! Új kérdést tehetsz fel.");
-                }
-            }, 1000);
+            countdown = setInterval(updateDisplay, 1000);
         }
 
         function stopTimer() {
             clearInterval(countdown);
             document.getElementById('timer-container').style.display = 'none';
             document.getElementById('main-grid').classList.remove('disabled');
-            document.getElementById('btn-veto').style.display = 'none';
+            localStorage.removeItem('jetLag_timerEnd');
+            localStorage.removeItem('jetLag_timerLabel');
         }
 
         function undoLast() {
@@ -374,6 +382,7 @@
                     document.getElementById('log-count').innerText = `${count} bejegyzés`;
                 }
                 lastAction = null;
+                saveState();
             }
         }
 
@@ -387,11 +396,28 @@
                 stopTimer();
                 const qLabel = lastAction ? lastAction.name : "Időzítő";
                 addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), `--- RESET: ${qLabel} visszaállítva ---`);
+                lastAction = null;
+                saveState();
             }
         }
 
         // Init
-        updateUI();
+        window.addEventListener('load', () => {
+            lastAction = JSON.parse(localStorage.getItem('jetLag_lastAction')) || null;
+            updateUI();
+
+            const savedEnd = localStorage.getItem('jetLag_timerEnd');
+            const savedLabel = localStorage.getItem('jetLag_timerLabel');
+            if (savedEnd) {
+                const endTime = parseInt(savedEnd);
+                if (endTime > Date.now()) {
+                    startTimer(0, savedLabel, endTime);
+                } else {
+                    localStorage.removeItem('jetLag_timerEnd');
+                    localStorage.removeItem('jetLag_timerLabel');
+                }
+            }
+        });
     </script>
 </body>
 
