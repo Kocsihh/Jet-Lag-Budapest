@@ -65,6 +65,7 @@ const originalDeck = [
 let currentDeck = JSON.parse(localStorage.getItem('jetLag_deck')) || [...originalDeck];
 let inventory = JSON.parse(localStorage.getItem('jetLag_inventory')) || [];
 let drawnPool = JSON.parse(localStorage.getItem('jetLag_drawnPool')) || [];
+let activeEffects = JSON.parse(localStorage.getItem('jetLag_activeEffects')) || [];
 
 // Cost payment state
 let isPaying = false;
@@ -75,6 +76,7 @@ function saveDeckState() {
     localStorage.setItem('jetLag_deck', JSON.stringify(currentDeck));
     localStorage.setItem('jetLag_inventory', JSON.stringify(inventory));
     localStorage.setItem('jetLag_drawnPool', JSON.stringify(drawnPool));
+    localStorage.setItem('jetLag_activeEffects', JSON.stringify(activeEffects));
 }
 
 function updateStats() {
@@ -82,16 +84,18 @@ function updateStats() {
 }
 
 function resetDeck() {
-    if (confirm("Biztosan újraindítod a paklit? Minden kártya visszakerül, az inventory törlődik.")) {
+    if (confirm("Biztosan újraindítod a paklit? Minden kártya visszakerül, az inventory törlődik és az aktív hatások megszűnnek.")) {
         currentDeck = [...originalDeck];
         inventory = [];
         drawnPool = [];
+        activeEffects = [];
         isPaying = false;
         targetIndex = -1;
         selectedForDiscard = [];
         saveDeckState();
         updateStats();
         renderInventory();
+        renderActiveEffects();
         document.getElementById('selection-area').innerHTML = '';
         document.getElementById('btn1').disabled = false;
         document.getElementById('btn2').disabled = false;
@@ -102,9 +106,9 @@ function resetDeck() {
 
 function drawChoice(count) {
     if (isPaying) return;
-    if (currentDeck.length < count) { 
+    if (currentDeck.length < count) {
         alert("A pakli kiürült! Újrakeverés...");
-        currentDeck = [...originalDeck]; 
+        currentDeck = [...originalDeck];
     }
 
     document.getElementById('btn1').disabled = true;
@@ -120,7 +124,7 @@ function drawChoice(count) {
         let card = currentDeck.splice(index, 1)[0];
         drawnPool.push(card);
     }
-    
+
     saveDeckState();
     renderDrawnPool();
     updateStats();
@@ -169,15 +173,138 @@ function renderInventory() {
         if (isPaying && index === targetIndex) invCard.classList.add('paying');
         if (selectedForDiscard.includes(index)) invCard.classList.add('selected-to-discard');
 
-        invCard.innerHTML = renderCardContent(card);
+        const canPlayDirectly = card.tipus !== "Idő" && card.cost === 0;
+        const playBtn = canPlayDirectly ? `<button class="play-btn" onclick="event.stopPropagation(); playCard(${index})">KIJÁTSZÁS</button>` : '';
+
+        invCard.innerHTML = `
+            ${renderCardContent(card)}
+            ${playBtn}
+        `;
         invCard.onclick = () => handleInventoryClick(index);
         display.appendChild(invCard);
     });
 }
 
+// Active Effects Logic
+function playCard(index) {
+    const card = inventory[index];
+
+    // Check if it's already being used for payment
+    if (isPaying && (index === targetIndex || selectedForDiscard.includes(index))) return;
+
+    // Idő cards are passive
+    if (card.tipus === "Idő") {
+        alert("Az Idő kártyák passzív előnyt adnak, nem kell őket kijátszani.");
+        return;
+    }
+
+    if (card.cost > 0) {
+        // Trigger payment flow instead of direct play
+        startUsage(index);
+        return;
+    }
+
+    if (confirm(`Kijátszod: ${card.nev}?`)) {
+        activateCardEffect(card);
+        inventory.splice(index, 1);
+        saveDeckState();
+        renderInventory();
+        renderActiveEffects();
+    }
+}
+
+function activateCardEffect(card) {
+    // Detect timer from description
+    let duration = 0;
+    const timeMatch = card.leiras.match(/(\d+)\s*perc/);
+    if (timeMatch) {
+        duration = parseInt(timeMatch[1]);
+    } else if (card.leiras.includes("p-ig")) {
+        const pMatch = card.leiras.match(/(\d+)p-ig/);
+        if (pMatch) duration = parseInt(pMatch[1]);
+    }
+
+    const newEffect = {
+        ...card,
+        startTime: Date.now(),
+        endTime: duration > 0 ? Date.now() + duration * 60 * 1000 : null
+    };
+
+    activeEffects.push(newEffect);
+}
+
+function renderActiveEffects() {
+    const section = document.getElementById('active-effects-section');
+    const display = document.getElementById('active-effects-display');
+
+    if (activeEffects.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    display.innerHTML = '';
+
+    activeEffects.forEach((effect, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = `card active-card type-${effect.tipus.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`;
+
+        let timerHtml = "";
+        if (effect.endTime) {
+            const remaining = Math.max(0, effect.endTime - Date.now());
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            timerHtml = `<div class="timer" id="timer-${index}">${mins}:${secs.toString().padStart(2, '0')}</div>`;
+        }
+
+        cardEl.innerHTML = `
+            ${renderCardContent(effect)}
+            ${timerHtml}
+            <button class="dismiss-btn" onclick="dismissEffect(${index})">TELJESÍTVE / TÖRLÉS</button>
+        `;
+        display.appendChild(cardEl);
+    });
+}
+
+function dismissEffect(index) {
+    activeEffects.splice(index, 1);
+    saveDeckState();
+    renderActiveEffects();
+}
+
+function updateActiveTimers() {
+    let changed = false;
+    activeEffects.forEach((effect, index) => {
+        if (effect.endTime) {
+            const timerEl = document.getElementById(`timer-${index}`);
+            if (timerEl) {
+                const remaining = Math.max(0, effect.endTime - Date.now());
+                const mins = Math.floor(remaining / 60000);
+                const secs = Math.floor((remaining % 60000) / 1000);
+                timerEl.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                if (remaining <= 0) {
+                    // Auto-remove or just stay at 0? Let's auto-remove expired ones
+                    // activeEffects.splice(index, 1); // Careful with splice in forEach
+                    changed = true;
+                }
+            }
+        }
+    });
+
+    if (changed) {
+        activeEffects = activeEffects.filter(e => !e.endTime || e.endTime > Date.now());
+        saveDeckState();
+        renderActiveEffects();
+    }
+}
+
 function handleInventoryClick(index) {
     if (!isPaying) {
-        startUsage(index);
+        const card = inventory[index];
+        if (card.tipus !== "Idő") {
+            startUsage(index);
+        }
     } else {
         handleDiscardSelection(index);
     }
@@ -186,11 +313,7 @@ function handleInventoryClick(index) {
 function startUsage(index) {
     const card = inventory[index];
     if (card.cost === 0) {
-        if (confirm(`Kijátszod: ${card.nev}?`)) {
-            inventory.splice(index, 1);
-            saveDeckState();
-            renderInventory();
-        }
+        playCard(index);
     } else {
         if (inventory.length <= card.cost) {
             alert("Nincs elég kártyád az inventory-ban a költség kifizetéséhez!");
@@ -232,8 +355,26 @@ function handleDiscardSelection(index) {
 function finalizeUsage() {
     const cardName = inventory[targetIndex].nev;
     if (confirm(`Kifizeted a költséget és használod a következőt: ${cardName}?`)) {
+        // Instead of just removing, we use playCard but with the already confirmed target
+        const targetCard = inventory[targetIndex];
         let indicesToRemove = [...selectedForDiscard, targetIndex].sort((a, b) => b - a);
         indicesToRemove.forEach(i => inventory.splice(i, 1));
+
+        // Add to active effects manually since it's already spliced
+        let duration = 0;
+        const timeMatch = targetCard.leiras.match(/(\d+)\s*perc/);
+        if (timeMatch) duration = parseInt(timeMatch[1]);
+        else if (targetCard.leiras.includes("p-ig")) {
+            const pMatch = targetCard.leiras.match(/(\d+)p-ig/);
+            if (pMatch) duration = parseInt(pMatch[1]);
+        }
+
+        activeEffects.push({
+            ...targetCard,
+            startTime: Date.now(),
+            endTime: duration > 0 ? Date.now() + duration * 60 * 1000 : null
+        });
+
         saveDeckState();
     }
     isPaying = false;
@@ -241,6 +382,7 @@ function finalizeUsage() {
     selectedForDiscard = [];
     updateStatus("");
     renderInventory();
+    renderActiveEffects();
 }
 
 function updateStatus(msg) {
@@ -257,10 +399,14 @@ function updateStatus(msg) {
 window.addEventListener('load', () => {
     updateStats();
     renderInventory();
+    renderActiveEffects();
+
     if (drawnPool.length > 0) {
         renderDrawnPool();
         document.getElementById('btn1').disabled = true;
         document.getElementById('btn2').disabled = true;
         document.getElementById('btn3').disabled = true;
     }
+
+    setInterval(updateActiveTimers, 1000);
 });

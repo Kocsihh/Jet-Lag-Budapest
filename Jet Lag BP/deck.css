@@ -157,6 +157,101 @@ button:disabled {
     gap: 15px;
 }
 
+/* Active Effects Section */
+#active-effects-section {
+    width: 100%;
+    max-width: 1000px;
+    margin-bottom: 40px;
+    background: linear-gradient(135deg, rgba(100, 255, 218, 0.03), rgba(100, 255, 218, 0.08));
+    padding: 25px;
+    border-radius: 20px;
+    border: 1px solid rgba(100, 255, 218, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+#active-effects-section h2 {
+    color: var(--accent);
+    font-size: 1rem;
+    margin: 0 0 20px 0;
+    text-align: left;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+    opacity: 0.8;
+}
+
+#active-effects-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.active-card {
+    height: auto !important;
+    aspect-ratio: auto !important;
+    padding: 18px !important;
+    background: var(--bg-nav) !important;
+    border-left: 1px solid rgba(100, 255, 218, 0.2) !important;
+    animation: active-glow 3s infinite ease-in-out;
+}
+
+.active-card .type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.active-card .type::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: var(--type-color, var(--accent));
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--type-color, var(--accent));
+}
+
+.active-card .timer {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    text-align: left;
+    margin: 10px 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.active-card .dismiss-btn {
+    margin-top: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-dim);
+    font-size: 0.6rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: var(--transition);
+    align-self: flex-start;
+}
+
+.active-card .dismiss-btn:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+@keyframes active-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 0 rgba(100, 255, 218, 0);
+    }
+
+    50% {
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4), 0 0 15px var(--type-shadow, rgba(100, 255, 218, 0.2));
+    }
+}
+
 /* Generic Card Styles */
 .card {
     background: var(--bg-card);
@@ -201,6 +296,23 @@ button:disabled {
     color: var(--text-dim);
     line-height: 1.4;
     flex-grow: 1;
+}
+
+.play-btn {
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 0.7rem;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.play-btn:hover {
+    background: var(--accent);
+    color: var(--bg-card);
 }
 
 /* Color Coding by Type */
