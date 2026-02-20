@@ -5,264 +5,493 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jet Lag Budapest: Hunyó Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-deep: #020c1b;
+            --bg-nav: #0a192f;
+            --bg-card: #112240;
+            --accent: #64ffda;
+            --text-main: #ccd6f6;
+            --text-dim: #8892b0;
+            --danger: #f44336;
+            --glass: rgba(17, 34, 64, 0.7);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            background: #0a192f;
-            color: white;
-            padding: 10px;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-main);
             margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
         }
 
         h1 {
-            color: #64ffda;
-            font-size: 1.2em;
-            margin: 5px 0;
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .stats {
-            color: #8892b0;
-            font-size: 0.75em;
-            margin-bottom: 10px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 5px;
         }
 
-        /* Timer Section */
-        #timer-container {
-            background: #112240;
-            border: 2px solid #64ffda;
-            padding: 15px;
-            margin: 10px auto;
-            width: 90%;
-            max-width: 400px;
-            border-radius: 12px;
-            display: none;
-            box-sizing: border-box;
-        }
-
-        #timer-display {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #64ffda;
-            font-family: monospace;
-        }
-
-        .timer-msg {
-            font-style: italic;
-            color: #ccd6f6;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-        }
-
-        /* Question Console */
-        .console {
-            background: #112240;
-            padding: 15px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            margin: 0 auto 10px;
-            text-align: left;
-            box-sizing: border-box;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #64ffda;
-            font-size: 0.9em;
-        }
-
-        select,
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #1d2d44;
-            background: #233554;
-            color: white;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-
-        button {
-            background: #64ffda;
-            color: #0a192f;
-            border: none;
-            padding: 14px 20px;
-            font-size: 1em;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            transition: 0.3s;
-            touch-action: manipulation;
-        }
-
-        button:active {
-            filter: brightness(0.8);
-            transform: scale(0.98);
-        }
-
-        button:disabled {
-            background: #444;
-            color: #888;
-            cursor: not-allowed;
-        }
-
-        /* Curse Tracker */
-        .curse-area {
-            border-top: 1px solid #233554;
-            padding-top: 15px;
-            margin-top: 10px;
-        }
-
-        .curse-btn {
-            background: #f44336;
-            color: white;
-            margin-bottom: 10px;
-            border: none;
-        }
-
-        /* History Log */
-        #log {
-            width: 90%;
-            max-width: 400px;
-            margin: 15px auto;
-            text-align: left;
-            font-size: 0.85em;
-            background: #020c1b;
-            padding: 10px;
-            border-radius: 8px;
-            color: #8892b0;
-            box-sizing: border-box;
-        }
-
-        .log-entry {
-            border-bottom: 1px dashed #233554;
-            padding: 5px 0;
-        }
-
+        /* Home Button */
         .home-btn {
-            background: rgba(100, 255, 218, 0.1);
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 8px;
-            font-size: 1.2em;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--glass);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-decoration: none;
-            color: #64ffda;
-            z-index: 100;
-            border: 1px solid #64ffda;
+            font-size: 1.5rem;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: 0.3s ease;
+        }
+
+        .home-btn:hover {
+            background: var(--accent);
+            color: var(--bg-deep);
+        }
+
+        /* Timer Section */
+        #timer-container {
+            position: sticky;
+            top: 10px;
+            z-index: 900;
+            background: var(--glass);
+            border: 2px solid var(--accent);
+            backdrop-filter: blur(15px);
+            padding: 15px;
+            margin-bottom: 20px;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 16px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        #timer-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 5px 0;
+        }
+
+        .timer-msg {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--text-dim);
+            background: transparent;
+            color: var(--text-dim);
+            transition: 0.3s;
+        }
+
+        .control-btn.undo {
+            border-color: #ffca28;
+            color: #ffca28;
+        }
+
+        .control-btn.reset {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .category-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .category-title {
+            color: var(--accent);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+
+        .q-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 10px;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .q-btn:hover {
+            background: rgba(100, 255, 218, 0.05);
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.1);
+        }
+
+        .q-btn:active {
+            transform: scale(0.95);
+        }
+
+        .q-btn img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 5px rgba(100, 255, 218, 0.3));
+        }
+
+        .q-btn span {
+            font-weight: 500;
+        }
+
+        /* History Log */
+        #log {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 30px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .log-time {
+            color: var(--text-dim);
+            font-family: monospace;
+        }
+
+        .log-text {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .disabled {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
+        /* Specific section icons or styles */
+        .section-foto {
+            border-color: rgba(244, 67, 54, 0.2);
+        }
+
+        .section-foto .category-title {
+            color: var(--danger);
+        }
+
+        .section-foto .q-btn:hover {
+            border-color: var(--danger);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.1);
         }
     </style>
 </head>
 
 <body>
-    <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
-    <h1>HUNYÓ DASHBOARD</h1>
-    <div class="stats">Várakozási idő és kérdéskövető</div>
+    <a href="./index.html" class="home-btn">🏠</a>
+    <header>
+        <h1>Hunyó Dashboard</h1>
+        <div class="stats">Válassz kérdést és rögzítsd a választ!</div>
+    </header>
 
     <!-- Timer Section -->
     <div id="timer-container">
         <div class="timer-msg" id="timer-label">Várakozás a következő kérdésig...</div>
         <div id="timer-display">05:00</div>
+        <div class="timer-controls">
+            <button class="control-btn undo" onclick="undoLast()">Visszavonás</button>
+            <button class="control-btn reset" onclick="resetTimer()">Reset</button>
+        </div>
     </div>
 
-    <!-- Question Console -->
-    <div id="main-console" class="console">
-        <label>1. Kérdés típusa:</label>
-        <select id="q-type">
-            <option value="normal">Radar (500m / 1km / 2km)</option>
-            <option value="normal">Hőmérő (Melegszik / Hűl)</option>
-            <option value="normal">Egyezés (Vonal / Kerület)</option>
-            <option value="photo">Fotó Kérés (10 perc büntetés!)</option>
-        </select>
+    <div class="dashboard-grid" id="main-grid">
+        <!-- Egyeztető questions -->
+        <section class="category-section">
+            <div class="category-title">🤝 Egyeztető Kérdések</div>
+            <div class="button-grid">
+                <button class="q-btn" onclick="askQuestion('Pest / Buda (3 lap)', 5)">
+                    <img src="assets/pest_buda.png" alt="P/B">
+                    <span>Pest / Buda</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Ugyanaz a villamosvonal?', 1)">
+                    <img src="assets/tram.png" alt="Tram">
+                    <span>Villi?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Ugyanaz a metróvonal?', 5)">
+                    <img src="assets/metro.png" alt="Metro">
+                    <span>Metró?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Ugyanaz a kerület?', 5)">
+                    <img src="assets/district.png" alt="Dist">
+                    <span>Kerület?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Legközelebbi kórház?', 5)">
+                    <img src="assets/hospital.png" alt="Hosp">
+                    <span>Kórház?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Legközelebbi mozi?', 5)">
+                    <img src="assets/cinema.png" alt="Cinema">
+                    <span>Mozi?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Legközelebbi Meki?', 5)">
+                    <img src="assets/mcdonalds.png" alt="Meki">
+                    <span>Meki?</span>
+                </button>
+            </div>
+        </section>
 
-        <label>2. Bújó válasza:</label>
-        <input type="text" id="q-answer" placeholder="Pl: Igen / 1.2 km / Kép elküldve">
+        <!-- Mérő questions -->
+        <section class="category-section">
+            <div class="category-title">📏 Mérő Kérdések</div>
+            <div class="button-grid">
+                <button class="q-btn" onclick="askQuestion('Közelebb: Kórház?', 5)">
+                    <span>Kórház?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Közelebb: Mozi?', 5)">
+                    <span>Mozi?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Közelebb: Meki?', 5)">
+                    <span>Meki?</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Közelebb: Reptér', 5)">
+                    <span>Reptér</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Közelebb: Állatkert', 5)">
+                    <span>Állatkert</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Közelebb: Vidámpark', 5)">
+                    <span>Vidámpark</span>
+                </button>
+            </div>
+        </section>
 
-        <button id="submit-btn" onclick="logAnswer()">VÁLASZ RÖGZÍTÉSE ÉS VÁRAKOZÁS</button>
+        <!-- Radar -->
+        <section class="category-section">
+            <div class="category-title">📡 Radar</div>
+            <div class="button-grid">
+                <button class="q-btn" onclick="askQuestion('Radar: 500m', 5)"><span>500m</span></button>
+                <button class="q-btn" onclick="askQuestion('Radar: 1km', 5)"><span>1km</span></button>
+                <button class="q-btn" onclick="askQuestion('Radar: Egyéni', 5)"><span>Egyéni</span></button>
+            </div>
+        </section>
+
+        <!-- Hőmérő -->
+        <section class="category-section">
+            <div class="category-title">🌡️ Hőmérő</div>
+            <div class="button-grid">
+                <button class="q-btn" onclick="askQuestion('Hőmérő: 2km', 5)"><span>2km</span></button>
+                <button class="q-btn" onclick="askQuestion('Hőmérő: 5km', 5)"><span>5km</span></button>
+            </div>
+        </section>
+
+        <!-- Fotó -->
+        <section class="category-section section-foto">
+            <div class="category-title">📸 Fotó Kihívások</div>
+            <div class="button-grid">
+                <button class="q-btn" onclick="askQuestion('Fotó: Legmagasabb épület', 10)">
+                    <span>Legmagasabb épület</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Fotó: Közeli épület', 10)">
+                    <span>Közeli épület</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Fotó: Égbolt (vízszintesen)', 10)">
+                    <span>Égbolt</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Fotó: Egy fa', 10)">
+                    <span>Egy fa</span>
+                </button>
+                <button class="q-btn" onclick="askQuestion('Fotó: Szelfi', 10)">
+                    <span>Szelfi</span>
+                </button>
+            </div>
+        </section>
     </div>
 
-    <!-- Active Curse Section -->
-    <div class="console curse-area">
-        <label>Aktív Átok (Bújó játszotta ki):</label>
-        <button class="curse-btn" onclick="startCurseTimer(5)">5 perc Átok (pl. Várakozás)</button>
-        <button class="curse-btn" onclick="startCurseTimer(10)">10 perc Átok (pl. Zászlókeresés)</button>
-    </div>
-
+    <!-- Log -->
     <div id="log">
-        <strong>ELŐZMÉNYEK:</strong>
+        <div class="log-header">
+            <strong>ELŐZMÉNYEK</strong>
+            <span id="log-count" style="font-size: 0.8rem; opacity: 0.5;">0 bejegyzés</span>
+        </div>
         <div id="log-content"></div>
     </div>
 
     <script>
         let countdown;
+        let lastAction = null;
 
-        function logAnswer() {
-            const type = document.getElementById('q-type').value;
-            const answer = document.getElementById('q-answer').value;
+        function askQuestion(qName, minutes) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            if (!answer) { alert("Írd be a választ!"); return; }
+            // Save state for undo
+            lastAction = {
+                name: qName,
+                timestamp: now,
+                minutes: minutes
+            };
 
-            // Logolás
-            const now = new Date().toLocaleTimeString();
+            // Add to log
+            addLogEntry(timeStr, qName);
+
+            // Start timer
+            startTimer(minutes, `Kérdezve: ${qName}`);
+        }
+
+        function addLogEntry(time, text) {
             const entry = document.createElement('div');
             entry.className = 'log-entry';
-            entry.innerHTML = `[${now}] <b>${answer}</b> (Típus: ${type === 'photo' ? 'Fotó' : 'Sima'})`;
+            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-text">${text}</span>`;
             document.getElementById('log-content').prepend(entry);
 
-            // Mezők ürítése
-            document.getElementById('q-answer').value = '';
-
-            // Timer indítása
-            const waitMinutes = type === 'photo' ? 10 : 5;
-            startTimer(waitMinutes, "Bújó válaszolt. Kötelező várakozás:");
+            const count = document.getElementById('log-content').children.length;
+            document.getElementById('log-count').innerText = `${count} bejegyzés`;
         }
 
         function startTimer(minutes, labelText) {
             clearInterval(countdown);
-            document.getElementById('main-choice-area')?.classList.add('disabled'); // if choice area existed
-            document.getElementById('main-console').style.opacity = "0.3";
-            document.getElementById('submit-btn').disabled = true;
 
             const container = document.getElementById('timer-container');
             const display = document.getElementById('timer-display');
             const label = document.getElementById('timer-label');
+            const grid = document.getElementById('main-grid');
 
             label.innerText = labelText;
             container.style.display = 'block';
+            grid.classList.add('disabled');
 
             let seconds = minutes * 60;
 
-            countdown = setInterval(() => {
+            const updateDisplay = () => {
                 const mins = Math.floor(seconds / 60);
                 const secs = seconds % 60;
                 display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            updateDisplay();
+
+            countdown = setInterval(() => {
+                seconds--;
+                updateDisplay();
 
                 if (seconds <= 0) {
-                    clearInterval(countdown);
-                    container.style.display = 'none';
-                    document.getElementById('main-console').style.opacity = "1";
-                    document.getElementById('submit-btn').disabled = false;
-                    alert("Lejárt a várakozási idő! Új kérdést tehettek fel.");
+                    stopTimer();
+                    alert("A várakozási idő lejárt! Új kérdést tehetsz fel.");
                 }
-                seconds--;
             }, 1000);
         }
 
-        function startCurseTimer(minutes) {
-            if (confirm(`Elkezditek teljesíteni az átkot (${minutes} perc)?`)) {
-                startTimer(minutes, "ÁTOK FOLYAMATBAN (Nincs mozgás/kérdés):");
+        function stopTimer() {
+            clearInterval(countdown);
+            document.getElementById('timer-container').style.display = 'none';
+            document.getElementById('main-grid').classList.remove('disabled');
+        }
+
+        function undoLast() {
+            if (confirm("Biztosan visszavonod az utolsó kérdést?")) {
+                stopTimer();
+                const logContent = document.getElementById('log-content');
+                if (logContent.firstChild) {
+                    logContent.removeChild(logContent.firstChild);
+                    const count = logContent.children.length;
+                    document.getElementById('log-count').innerText = `${count} bejegyzés`;
+                }
+                lastAction = null;
+            }
+        }
+
+        function resetTimer() {
+            if (confirm("Biztosan manuálisan törlöd a timert?")) {
+                stopTimer();
             }
         }
     </script>
