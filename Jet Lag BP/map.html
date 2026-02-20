@@ -27,20 +27,25 @@
 
         .controls {
             background: #1a1a1a;
-            padding: 10px;
+            padding: 12px;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 10px;
             border-top: 1px solid #333;
             overflow-x: auto;
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            /* Hide scrollbar for Chrome/Safari/Firefox */
+            scrollbar-width: thin;
+            scrollbar-color: #444 #1a1a1a;
         }
 
         .controls::-webkit-scrollbar {
-            display: none;
+            height: 4px;
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
         }
 
         button {
@@ -125,22 +130,24 @@
         }
 
         .home-btn {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px;
-            font-size: 1.2em;
+            top: 15px;
+            left: 15px;
+            padding: 0;
+            font-size: 1.4em;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-decoration: none;
             color: white;
-            z-index: 1001;
-            border: 1px solid #444;
+            z-index: 2000;
+            /* Legfelülre */
+            border: 2px solid #ff4500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
         }
     </style>
