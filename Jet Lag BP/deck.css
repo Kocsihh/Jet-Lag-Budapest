@@ -1,0 +1,260 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background: #121212;
+    color: white;
+    padding: 10px;
+    margin: 0;
+    user-select: none;
+}
+
+h1 {
+    color: #ff4500;
+    font-size: 1.8em;
+    margin: 15px 0;
+    letter-spacing: 1px;
+}
+
+.stats {
+    color: #888;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+/* Választási terület */
+#selection-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 180px));
+    gap: 15px;
+    margin-bottom: 25px;
+    min-height: 150px;
+    padding: 0 10px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+}
+
+.card {
+    background: linear-gradient(145deg, #1e1e1e, #252525);
+    border: 2px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85em;
+    position: relative;
+    text-align: left;
+    aspect-ratio: 3 / 4;
+    width: 100%;
+    max-width: 200px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    touch-action: manipulation;
+    box-sizing: border-box;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: #ff4500;
+    box-shadow: 0 8px 20px rgba(255, 69, 0, 0.2);
+}
+
+.card:active {
+    transform: scale(0.95);
+}
+
+.type {
+    font-weight: 800;
+    color: #ff4500;
+    text-transform: uppercase;
+    font-size: 0.65em;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+
+.name {
+    font-size: 1.05em;
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.2;
+    color: #fff;
+}
+
+.desc {
+    color: #ccc;
+    font-size: 0.8em;
+    line-height: 1.4;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* Cost Display */
+.cost-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 3px;
+}
+
+.cost-dot {
+    width: 7px;
+    height: 7px;
+    background: #ff4500;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #ff4500;
+}
+
+/* Gombok */
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button {
+    background: #ff4500;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 0.95em;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    flex: 0 1 auto;
+    min-width: 110px;
+    transition: 0.2s;
+    box-shadow: 0 4px 0 #b33000;
+}
+
+button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #b33000;
+}
+
+button:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.home-btn {
+    background: #1a1a1a;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 10px;
+    font-size: 1.4em;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: white;
+    z-index: 100;
+    border: 1px solid #333;
+    transition: 0.2s;
+}
+
+.home-btn:hover {
+    background: #333;
+    border-color: #ff4500;
+}
+
+/* Inventory */
+#inventory-section {
+    border-top: 2px solid #222;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+#inventory-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 170px));
+    gap: 12px;
+    padding: 0 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+    justify-content: center;
+}
+
+.inventory-card {
+    aspect-ratio: 3 / 4;
+}
+
+.inventory-card.paying {
+    border-color: #00ff00;
+    transform: translateY(-8px);
+    box-shadow: 0 8px 25px rgba(0, 255, 0, 0.3);
+}
+
+.inventory-card.selected-to-discard {
+    border-color: #ff0000;
+    opacity: 0.4;
+    transform: scale(0.92);
+}
+
+/* Status bar for paying */
+#status-bar {
+    background: #1a1a1a;
+    border: 2px solid #ff4500;
+    padding: 12px;
+    margin: 15px auto;
+    max-width: 500px;
+    border-radius: 12px;
+    display: none;
+    font-weight: 800;
+    color: #ff4500;
+    font-size: 1em;
+    box-shadow: 0 0 15px rgba(255, 69, 0, 0.3);
+}
+
+/* PC-specifikus finomítások */
+@media (min-width: 768px) {
+    #selection-area {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+        gap: 20px;
+    }
+
+    #inventory-display {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 180px));
+    }
+
+    .card {
+        font-size: 0.95em;
+    }
+
+    h1 {
+        font-size: 2.2em;
+    }
+}
+
+/* Mobil finomítások */
+@media (max-width: 480px) {
+    #selection-area {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+
+    #inventory-display {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    button {
+        padding: 10px 14px;
+        font-size: 0.85em;
+        min-width: 90px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+}
