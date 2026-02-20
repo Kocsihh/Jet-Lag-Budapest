@@ -1,46 +1,173 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jet Lag Budapest: Hunyó Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #0a192f; color: white; padding: 10px; margin: 0; }
-        h1 { color: #64ffda; font-size: 1.5em; margin: 10px 0; }
-        .stats { color: #8892b0; font-size: 0.85em; margin-bottom: 20px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background: #0a192f;
+            color: white;
+            padding: 10px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #64ffda;
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+
+        .stats {
+            color: #8892b0;
+            font-size: 0.75em;
+            margin-bottom: 10px;
+        }
 
         /* Timer Section */
-        #timer-container { 
-            background: #112240; border: 2px solid #64ffda; padding: 15px; 
-            margin: 10px auto; max-width: 400px; border-radius: 12px;
+        #timer-container {
+            background: #112240;
+            border: 2px solid #64ffda;
+            padding: 15px;
+            margin: 10px auto;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
             display: none;
+            box-sizing: border-box;
         }
-        #timer-display { font-size: 3em; font-weight: bold; color: #64ffda; font-family: monospace; }
-        .timer-msg { font-style: italic; color: #ccd6f6; margin-bottom: 5px; }
+
+        #timer-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #64ffda;
+            font-family: monospace;
+        }
+
+        .timer-msg {
+            font-style: italic;
+            color: #ccd6f6;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
 
         /* Question Console */
-        .console { background: #112240; padding: 15px; border-radius: 12px; max-width: 400px; margin: 0 auto 20px; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #64ffda; }
-        select, input { width: 100%; padding: 10px; border-radius: 5px; border: none; background: #233554; color: white; margin-bottom: 15px; box-sizing: border-box; }
-        
-        button { 
-            background: #64ffda; color: #0a192f; border: none; padding: 12px 20px; 
-            font-size: 1em; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;
-            transition: 0.3s;
+        .console {
+            background: #112240;
+            padding: 15px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            margin: 0 auto 10px;
+            text-align: left;
+            box-sizing: border-box;
         }
-        button:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #64ffda;
+            font-size: 0.9em;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #1d2d44;
+            background: #233554;
+            color: white;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            background: #64ffda;
+            color: #0a192f;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: 0.3s;
+            touch-action: manipulation;
+        }
+
+        button:active {
+            filter: brightness(0.8);
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
 
         /* Curse Tracker */
-        .curse-area { border-top: 1px solid #233554; padding-top: 15px; margin-top: 20px; }
-        .curse-btn { background: #f44336; color: white; margin-bottom: 10px; }
-        
+        .curse-area {
+            border-top: 1px solid #233554;
+            padding-top: 15px;
+            margin-top: 10px;
+        }
+
+        .curse-btn {
+            background: #f44336;
+            color: white;
+            margin-bottom: 10px;
+            border: none;
+        }
+
         /* History Log */
-        #log { max-width: 400px; margin: 20px auto; text-align: left; font-size: 0.85em; background: #020c1b; padding: 10px; border-radius: 8px; color: #8892b0; }
-        .log-entry { border-bottom: 1px dashed #233554; padding: 5px 0; }
+        #log {
+            width: 90%;
+            max-width: 400px;
+            margin: 15px auto;
+            text-align: left;
+            font-size: 0.85em;
+            background: #020c1b;
+            padding: 10px;
+            border-radius: 8px;
+            color: #8892b0;
+            box-sizing: border-box;
+        }
+
+        .log-entry {
+            border-bottom: 1px dashed #233554;
+            padding: 5px 0;
+        }
+
+        .home-btn {
+            background: rgba(100, 255, 218, 0.1);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 8px;
+            font-size: 1.2em;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #64ffda;
+            z-index: 100;
+            border: 1px solid #64ffda;
+        }
     </style>
 </head>
-<body>
 
+<body>
+    <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
     <h1>HUNYÓ DASHBOARD</h1>
     <div class="stats">Várakozási idő és kérdéskövető</div>
 
@@ -80,12 +207,12 @@
 
     <script>
         let countdown;
-        
+
         function logAnswer() {
             const type = document.getElementById('q-type').value;
             const answer = document.getElementById('q-answer').value;
-            
-            if(!answer) { alert("Írd be a választ!"); return; }
+
+            if (!answer) { alert("Írd be a választ!"); return; }
 
             // Logolás
             const now = new Date().toLocaleTimeString();
@@ -107,21 +234,21 @@
             document.getElementById('main-choice-area')?.classList.add('disabled'); // if choice area existed
             document.getElementById('main-console').style.opacity = "0.3";
             document.getElementById('submit-btn').disabled = true;
-            
+
             const container = document.getElementById('timer-container');
             const display = document.getElementById('timer-display');
             const label = document.getElementById('timer-label');
-            
+
             label.innerText = labelText;
             container.style.display = 'block';
 
             let seconds = minutes * 60;
-            
+
             countdown = setInterval(() => {
                 const mins = Math.floor(seconds / 60);
                 const secs = seconds % 60;
                 display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                
+
                 if (seconds <= 0) {
                     clearInterval(countdown);
                     container.style.display = 'none';
@@ -134,10 +261,11 @@
         }
 
         function startCurseTimer(minutes) {
-            if(confirm(`Elkezditek teljesíteni az átkot (${minutes} perc)?`)) {
+            if (confirm(`Elkezditek teljesíteni az átkot (${minutes} perc)?`)) {
                 startTimer(minutes, "ÁTOK FOLYAMATBAN (Nincs mozgás/kérdés):");
             }
         }
     </script>
 </body>
+
 </html>

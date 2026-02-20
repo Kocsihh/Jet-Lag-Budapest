@@ -1,20 +1,95 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jet Lag: Budapest - Menü</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
-        a { display: block; background: #ff4500; color: white; text-decoration: none; padding: 15px; margin: 10px auto; max-width: 300px; border-radius: 8px; font-weight: bold; font-size: 1.2em; }
-        a:hover { background: #ff6a00; }
-        h1 { margin-bottom: 30px; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #000;
+            color: white;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            color: #ff4500;
+            font-size: 2.5em;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            color: white;
+            text-decoration: none;
+            padding: 20px;
+            width: 80%;
+            max-width: 350px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.2em;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        a:active {
+            background: #ff4500;
+            transform: scale(0.95);
+            border-color: #ff4500;
+        }
+
+        span.icon {
+            margin-right: 15px;
+            font-size: 1.4em;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            color: #444;
+            font-size: 0.8em;
+        }
     </style>
 </head>
+
 <body>
-    <h1>JET LAG: BUDAPEST</h1>
-    <a href="deck.html">🎴 Kártyák & Pakli</a>
-    <a href="hunyo.html">🕵️ Hunyó Dashboard</a>
-    <a href="map.html">🗺️ Térkép & Radar</a>
+    <div class="container">
+        <h1>JET LAG<br><span style="color:white; font-size: 0.5em; vertical-align: middle;">BUDAPEST</span></h1>
+
+        <div class="menu">
+            <a href="./deck.html"><span class="icon">🎴</span> Kártyák & Pakli</a>
+            <a href="./hunyo.html"><span class="icon">🕵️</span> Hunyó Dashboard</a>
+            <a href="./map.html"><span class="icon">🗺️</span> Térkép & Radar</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        v1.1 - Mobile Optimized
+    </div>
 </body>
+
 </html>

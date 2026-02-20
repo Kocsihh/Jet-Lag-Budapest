@@ -1,68 +1,284 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jet Lag Budapest: Cost Edition</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #121212; color: white; padding: 10px; margin: 0; user-select: none; }
-        h1 { color: #ff4500; font-size: 1.5em; margin: 10px 0; }
-        
-        .stats { color: #888; font-size: 0.85em; margin-bottom: 10px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background: #121212;
+            color: white;
+            padding: 10px;
+            margin: 0;
+            user-select: none;
+        }
+
+        h1 {
+            color: #ff4500;
+            font-size: 1.8em;
+            margin: 15px 0;
+            letter-spacing: 1px;
+        }
+
+        .stats {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
 
         /* Választási terület */
-        #selection-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 15px; min-height: 120px; }
-        
-        .card { 
-            background: #1e1e1e; border: 2px solid #444; border-radius: 10px; 
-            padding: 12px; width: 130px; cursor: pointer; transition: 0.2s;
-            display: flex; flex-direction: column; font-size: 0.8em; position: relative;
-            text-align: left;
+        #selection-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 180px));
+            gap: 15px;
+            margin-bottom: 25px;
+            min-height: 150px;
+            padding: 0 10px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            justify-content: center;
         }
-        .card:hover { border-color: #ff4500; }
 
-        .type { font-weight: bold; color: #ff4500; text-transform: uppercase; font-size: 0.65em; margin-bottom: 4px; }
-        .name { font-size: 1em; font-weight: bold; margin-bottom: 6px; min-height: 2.2em; line-height: 1.1; }
-        .desc { color: #bbb; font-size: 0.75em; line-height: 1.2; flex-grow: 1; }
-        
+        .card {
+            background: linear-gradient(145deg, #1e1e1e, #252525);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            font-size: 0.85em;
+            position: relative;
+            text-align: left;
+            aspect-ratio: 3 / 4;
+            width: 100%;
+            max-width: 200px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            touch-action: manipulation;
+            box-sizing: border-box;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #ff4500;
+            box-shadow: 0 8px 20px rgba(255, 69, 0, 0.2);
+        }
+
+        .card:active {
+            transform: scale(0.95);
+        }
+
+        .type {
+            font-weight: 800;
+            color: #ff4500;
+            text-transform: uppercase;
+            font-size: 0.65em;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .name {
+            font-size: 1.05em;
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.2;
+            color: #fff;
+        }
+
+        .desc {
+            color: #ccc;
+            font-size: 0.8em;
+            line-height: 1.4;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
         /* Cost Display */
-        .cost-indicator { position: absolute; top: 8px; right: 8px; display: flex; gap: 2px; }
-        .cost-dot { width: 8px; height: 8px; background: #ff4500; border-radius: 50%; box-shadow: 0 0 5px #ff4500; }
+        .cost-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 3px;
+        }
+
+        .cost-dot {
+            width: 7px;
+            height: 7px;
+            background: #ff4500;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #ff4500;
+        }
 
         /* Gombok */
-        .controls { margin-bottom: 20px; }
-        button { 
-            background: #ff4500; color: white; border: none; padding: 12px 18px; 
-            font-size: 0.9em; border-radius: 8px; cursor: pointer; margin: 4px; font-weight: bold;
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        button:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+        button {
+            background: #ff4500;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 0.95em;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 0 1 auto;
+            min-width: 110px;
+            transition: 0.2s;
+            box-shadow: 0 4px 0 #b33000;
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b33000;
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .home-btn {
+            background: #1a1a1a;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 10px;
+            font-size: 1.4em;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            z-index: 100;
+            border: 1px solid #333;
+            transition: 0.2s;
+        }
+
+        .home-btn:hover {
+            background: #333;
+            border-color: #ff4500;
+        }
 
         /* Inventory */
-        #inventory-section { border-top: 2px solid #333; padding-top: 15px; margin-top: 15px; }
-        #inventory-display { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-        
-        .inventory-card { width: 110px; min-height: 130px; border-style: solid; }
-        .inventory-card.paying { border-color: #00ff00; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,255,0,0.2); }
-        .inventory-card.selected-to-discard { border-color: #ff0000; opacity: 0.5; transform: scale(0.9); }
+        #inventory-section {
+            border-top: 2px solid #222;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        #inventory-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 170px));
+            gap: 12px;
+            padding: 0 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+            justify-content: center;
+        }
+
+        .inventory-card {
+            aspect-ratio: 3 / 4;
+        }
+
+        .inventory-card.paying {
+            border-color: #00ff00;
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0, 255, 0, 0.3);
+        }
+
+        .inventory-card.selected-to-discard {
+            border-color: #ff0000;
+            opacity: 0.4;
+            transform: scale(0.92);
+        }
 
         /* Status bar for paying */
-        #status-bar { 
-            background: #222; border: 1px solid #ff4500; padding: 10px; 
-            margin: 10px auto; max-width: 400px; border-radius: 8px;
-            display: none; font-weight: bold; color: #ff4500;
+        #status-bar {
+            background: #1a1a1a;
+            border: 2px solid #ff4500;
+            padding: 12px;
+            margin: 15px auto;
+            max-width: 500px;
+            border-radius: 12px;
+            display: none;
+            font-weight: 800;
+            color: #ff4500;
+            font-size: 1em;
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.3);
+        }
+
+        /* PC-specifikus finomítások */
+        @media (min-width: 768px) {
+            #selection-area {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+                gap: 20px;
+            }
+
+            #inventory-display {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 180px));
+            }
+
+            .card {
+                font-size: 0.95em;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+        }
+
+        /* Mobil finomítások */
+        @media (max-width: 480px) {
+            #selection-area {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+
+            #inventory-display {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+
+            button {
+                padding: 10px 14px;
+                font-size: 0.85em;
+                min-width: 90px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
-<body>
 
+<body>
+    <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
     <h1>JET LAG: BUDAPEST</h1>
     <div class="stats" id="deck-stats">Pakli: 60/60</div>
 
-<div class="controls">
-    <button id="btn1" onclick="drawChoice(1)">Húzz 1-et</button>
-    <button id="btn2" onclick="drawChoice(2)">Húzz 2-t</button>
-    <button id="btn3" onclick="drawChoice(3)">Húzz 3-at</button>
-</div>
+    <div class="controls">
+        <button id="btn1" onclick="drawChoice(1)">Húzz 1-et</button>
+        <button id="btn2" onclick="drawChoice(2)">Húzz 2-t</button>
+        <button id="btn3" onclick="drawChoice(3)">Húzz 3-at</button>
+    </div>
 
 
     <div id="status-bar"></div>
@@ -77,73 +293,73 @@
         const originalDeck = [
             // TIPUSOK: Idő (Cost 0), Átok (Cost 1-2), Speciális (Cost 1-2)
             // --- IDŐKÁRTYÁK (20 db - Ingyenes) ---
-            {nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút."},
-            {nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút."},
-            {nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút."},
-            {nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút."},
-            {nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút."},
-            {nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút."},
-            {nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút."},
-            {nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút."},
-            {nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút."},
-            {nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút."},
-            {nev: "Idő +5p", tipus: "Idő", cost: 0, leiras: "+5 perc egérút."},
-            {nev: "Idő +5p", tipus: "Idő", cost: 0, leiras: "+5 perc egérút."},
-            {nev: "Idő +5p", tipus: "Idő", cost: 0, leiras: "+5 perc egérút."},
-            {nev: "Idő +7p", tipus: "Idő", cost: 0, leiras: "+7 perc egérút."},
-            {nev: "Idő +7p", tipus: "Idő", cost: 0, leiras: "+7 perc egérút."},
-            {nev: "Idő +10p", tipus: "Idő", cost: 0, leiras: "+10 perc egérút."},
-            {nev: "Idő +10p", tipus: "Idő", cost: 0, leiras: "+10 perc egérút."},
-            {nev: "Idő +15p", tipus: "Idő", cost: 0, leiras: "+15 perc egérút."},
-            {nev: "Idő +15p", tipus: "Idő", cost: 0, leiras: "+15 perc egérút."},
-            {nev: "Idő +20p", tipus: "Idő", cost: 0, leiras: "A Játékmester kegye."},
-            {nev: "Idő +5%", tipus: "Idő", cost: 0, leiras: "Az addigi összes bónusz időt növeli 5%-kal."},
+            { nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút." },
+            { nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút." },
+            { nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút." },
+            { nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút." },
+            { nev: "Idő +2p", tipus: "Idő", cost: 0, leiras: "+2 perc egérút." },
+            { nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút." },
+            { nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút." },
+            { nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút." },
+            { nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút." },
+            { nev: "Idő +3p", tipus: "Idő", cost: 0, leiras: "+3 perc egérút." },
+            { nev: "Idő +5p", tipus: "Idő", cost: 0, leiras: "+5 perc egérút." },
+            { nev: "Idő +5p", tipus: "Idő", cost: 0, leiras: "+5 perc egérút." },
+            { nev: "Idő +5p", tipus: "Idő", cost: 0, leiras: "+5 perc egérút." },
+            { nev: "Idő +7p", tipus: "Idő", cost: 0, leiras: "+7 perc egérút." },
+            { nev: "Idő +7p", tipus: "Idő", cost: 0, leiras: "+7 perc egérút." },
+            { nev: "Idő +10p", tipus: "Idő", cost: 0, leiras: "+10 perc egérút." },
+            { nev: "Idő +10p", tipus: "Idő", cost: 0, leiras: "+10 perc egérút." },
+            { nev: "Idő +15p", tipus: "Idő", cost: 0, leiras: "+15 perc egérút." },
+            { nev: "Idő +15p", tipus: "Idő", cost: 0, leiras: "+15 perc egérút." },
+            { nev: "Idő +20p", tipus: "Idő", cost: 0, leiras: "A Játékmester kegye." },
+            { nev: "Idő +5%", tipus: "Idő", cost: 0, leiras: "Az addigi összes bónusz időt növeli 5%-kal." },
 
             // 15 átok kártya
 
-            {nev: "Beragadt ajtó", tipus: "Átok", cost: 1, leiras: "Ajtón áthaladásnál (épület/jármű) 2 kockával 7+ dobás kell. Ha nem sikerül: 5p várakozás és újra amíg nem sikerül."},
-            {nev: "Kátyú-átok", tipus: "Átok", cost: 1, leiras: "Keressetek 3 kátyút (min. 20cm) 3 különböző utcában (fotó!)."},
-            {nev: "Váltságdíj levél", tipus: "Átok", cost: 2, leiras: "A következő kérdést nyomtatott anyagból kivágott betűkből kell összerakni (min. 5 szó)."},
-            {nev: "Falatozóna", tipus: "Átok", cost: 1, leiras: "Menjetek egy Falatozónába, kóstoljatok valami újat és mondjatok véleményt."},
-            {nev: "Falatozóna", tipus: "Átok", cost: 1, leiras: "Menjetek egy Falatozónába, kóstoljatok valami újat és mondjatok véleményt."},
-            {nev: "Merész tipp", tipus: "Átok", cost: 2, leiras: "Hunyók tippelnek: ha eltalálják, a búvó vall. Ha nem: 27p kényszerpihenő a hunyóknak."},
-            {nev: "ChatGPT-metró", tipus: "Átok", cost: 2, leiras: "A ChatGPT mond egy random metrómegállót, oda el kell utazni (átmehetsz rajta)."},
-            {nev: "Virágzó otthon", tipus: "Átok", cost: 1, leiras: "A búvó zónája 50%-kal nő. "},
-            {nev: "Szívecske", tipus: "Átok", cost: 1, leiras: "Keressetek egy szívecske szimbólumot a környéken, mielőtt kérdezhetnétek."},
-            {nev: "Cápa-átok", tipus: "Átok", cost: 2, leiras: "25 percig tilos megállni (folyamatos gyaloglás)."},
-            {nev: "Metró-zár", tipus: "Átok", cost: 2, leiras: "30 percig tilos a metró használata."},
-            {nev: "Páratlan járatok", tipus: "Átok", cost: 1, leiras: "30 percig csak páratlan számú járattal közlekedhettek."},
-            {nev: "Páros járatok", tipus: "Átok", cost: 1, leiras: "30 percig csak páros számú járattal közlekedhettek."},
-            {nev: "Zászló-vadász", tipus: "Átok", cost: 1, leiras: "Találjatok magyar zászlót. Fotóval bizonyítva."},
-            {nev: "Széchenyi Terv", tipus: "Átok", cost: 1, leiras: "Fotózzatok EU-s táblát."},
-            {nev: "Blokád", tipus: "Átok", cost: 0, leiras: "Következő metró megvárása."},
-            {nev: "Akasztófa", tipus: "Átok", cost: 1, leiras: "Győzzetek akasztófában a bújó ellen. Ha nem sikerült: 10p várakozás."},
-            {nev: "Vágányzár v1", tipus: "Átok", cost: 0, leiras: "M3-M1 vonal tiltva 15 percig."},
-            {nev: "Vágányzár v2", tipus: "Átok", cost: 0, leiras: "M2-M4 vonal tiltva 15 percig."},
-            {nev: "Zebra-fóbia", tipus: "Átok", cost: 1, leiras: "Felszínen tilos a zebra 30p-ig."},
-            {nev: "Duna-zár", tipus: "Átok", cost: 1, leiras: "20p-ig tilos átkelni a folyón."},
-            {nev: "Aprópénz", tipus: "Átok", cost: 1, leiras: "Keress egy 100-ast. (pl: automata)"},
-            {nev: "Szobor-fotó", tipus: "Átok", cost: 1, leiras: "Fotózz egy szobrot bárhol."},
-            {nev: "BKK Hírek", tipus: "Átok", cost: 0, leiras: "Olvass fel egy kijelző-hírt videóban."},
-            {nev: "Táv-dobás", tipus: "Átok", cost: 1, leiras: "Dobj egy 5-ös vagy nagyobb értéket egy kockával úgy hogy legalább 30 méter messze dobod lol"},
+            { nev: "Beragadt ajtó", tipus: "Átok", cost: 1, leiras: "Ajtón áthaladásnál (épület/jármű) 2 kockával 7+ dobás kell. Ha nem sikerül: 5p várakozás és újra amíg nem sikerül." },
+            { nev: "Kátyú-átok", tipus: "Átok", cost: 1, leiras: "Keressetek 3 kátyút (min. 20cm) 3 különböző utcában (fotó!)." },
+            { nev: "Váltságdíj levél", tipus: "Átok", cost: 2, leiras: "A következő kérdést nyomtatott anyagból kivágott betűkből kell összerakni (min. 5 szó)." },
+            { nev: "Falatozóna", tipus: "Átok", cost: 1, leiras: "Menjetek egy Falatozónába, kóstoljatok valami újat és mondjatok véleményt." },
+            { nev: "Falatozóna", tipus: "Átok", cost: 1, leiras: "Menjetek egy Falatozónába, kóstoljatok valami újat és mondjatok véleményt." },
+            { nev: "Merész tipp", tipus: "Átok", cost: 2, leiras: "Hunyók tippelnek: ha eltalálják, a búvó vall. Ha nem: 27p kényszerpihenő a hunyóknak." },
+            { nev: "ChatGPT-metró", tipus: "Átok", cost: 2, leiras: "A ChatGPT mond egy random metrómegállót, oda el kell utazni (átmehetsz rajta)." },
+            { nev: "Virágzó otthon", tipus: "Átok", cost: 1, leiras: "A búvó zónája 50%-kal nő. " },
+            { nev: "Szívecske", tipus: "Átok", cost: 1, leiras: "Keressetek egy szívecske szimbólumot a környéken, mielőtt kérdezhetnétek." },
+            { nev: "Cápa-átok", tipus: "Átok", cost: 2, leiras: "25 percig tilos megállni (folyamatos gyaloglás)." },
+            { nev: "Metró-zár", tipus: "Átok", cost: 2, leiras: "30 percig tilos a metró használata." },
+            { nev: "Páratlan járatok", tipus: "Átok", cost: 1, leiras: "30 percig csak páratlan számú járattal közlekedhettek." },
+            { nev: "Páros járatok", tipus: "Átok", cost: 1, leiras: "30 percig csak páros számú járattal közlekedhettek." },
+            { nev: "Zászló-vadász", tipus: "Átok", cost: 1, leiras: "Találjatok magyar zászlót. Fotóval bizonyítva." },
+            { nev: "Széchenyi Terv", tipus: "Átok", cost: 1, leiras: "Fotózzatok EU-s táblát." },
+            { nev: "Blokád", tipus: "Átok", cost: 0, leiras: "Következő metró megvárása." },
+            { nev: "Akasztófa", tipus: "Átok", cost: 1, leiras: "Győzzetek akasztófában a bújó ellen. Ha nem sikerült: 10p várakozás." },
+            { nev: "Vágányzár v1", tipus: "Átok", cost: 0, leiras: "M3-M1 vonal tiltva 15 percig." },
+            { nev: "Vágányzár v2", tipus: "Átok", cost: 0, leiras: "M2-M4 vonal tiltva 15 percig." },
+            { nev: "Zebra-fóbia", tipus: "Átok", cost: 1, leiras: "Felszínen tilos a zebra 30p-ig." },
+            { nev: "Duna-zár", tipus: "Átok", cost: 1, leiras: "20p-ig tilos átkelni a folyón." },
+            { nev: "Aprópénz", tipus: "Átok", cost: 1, leiras: "Keress egy 100-ast. (pl: automata)" },
+            { nev: "Szobor-fotó", tipus: "Átok", cost: 1, leiras: "Fotózz egy szobrot bárhol." },
+            { nev: "BKK Hírek", tipus: "Átok", cost: 0, leiras: "Olvass fel egy kijelző-hírt videóban." },
+            { nev: "Táv-dobás", tipus: "Átok", cost: 1, leiras: "Dobj egy 5-ös vagy nagyobb értéket egy kockával úgy hogy legalább 30 méter messze dobod lol" },
 
             // --- SPECIÁLIS KÁRTYÁK (20 db) ---
-            {nev: "Vétó", tipus: "Speciális", cost: 0, leiras: "Kérdés törlése."},
-            {nev: "Vétó", tipus: "Speciális", cost: 0, leiras: "Kérdés törlése."},
-            {nev: "Randomizálás", tipus: "Speciális", cost: 0, leiras: "Kocka dönt a kérdésről."},
-            {nev: "Randomizálás", tipus: "Speciális", cost: 0, leiras: "Kocka dönt a kérdésről."},
-            {nev: "Másolás", tipus: "Speciális", cost: 0, leiras: "Egy kártya másolása."},
-            {nev: "Átszállójegy", tipus: "Speciális", cost: 0, leiras: "Tilos vonalváltás 10p-ig."},
-            {nev: "Irányváltó", tipus: "Speciális", cost: 0, leiras: "A Húnyók azonnal szálljanak le és menjenek vissza 2 megállót, ha vonalon vannak."},
-            {nev: "Szuper-Vétó", tipus: "Speciális", cost: 0, leiras: "Kérdés + Hunyó kérdés kuka."},
-            {nev: "Kiürült agy", tipus: "Speciális", cost: 1, leiras: "3 tiltott kérdés 1-1 kategórián belül."}
+            { nev: "Vétó", tipus: "Speciális", cost: 0, leiras: "Kérdés törlése." },
+            { nev: "Vétó", tipus: "Speciális", cost: 0, leiras: "Kérdés törlése." },
+            { nev: "Randomizálás", tipus: "Speciális", cost: 0, leiras: "Kocka dönt a kérdésről." },
+            { nev: "Randomizálás", tipus: "Speciális", cost: 0, leiras: "Kocka dönt a kérdésről." },
+            { nev: "Másolás", tipus: "Speciális", cost: 0, leiras: "Egy kártya másolása." },
+            { nev: "Átszállójegy", tipus: "Speciális", cost: 0, leiras: "Tilos vonalváltás 10p-ig." },
+            { nev: "Irányváltó", tipus: "Speciális", cost: 0, leiras: "A Húnyók azonnal szálljanak le és menjenek vissza 2 megállót, ha vonalon vannak." },
+            { nev: "Szuper-Vétó", tipus: "Speciális", cost: 0, leiras: "Kérdés + Hunyó kérdés kuka." },
+            { nev: "Kiürült agy", tipus: "Speciális", cost: 1, leiras: "3 tiltott kérdés 1-1 kategórián belül." }
             // 5db húzós speciális kártya 
         ];
 
         let currentDeck = [...originalDeck];
         let inventory = [];
         let drawnPool = [];
-        
+
         // Cost payment state
         let isPaying = false;
         let targetIndex = -1;
@@ -180,7 +396,7 @@
 
         function renderCardContent(card) {
             let dots = "";
-            for(let i=0; i<card.cost; i++) dots += '<div class="cost-dot"></div>';
+            for (let i = 0; i < card.cost; i++) dots += '<div class="cost-dot"></div>';
             return `
                 <div class="cost-indicator">${dots}</div>
                 <div class="type">${card.tipus}</div>
@@ -206,7 +422,7 @@
                 invCard.className = 'card inventory-card';
                 if (isPaying && index === targetIndex) invCard.classList.add('paying');
                 if (selectedForDiscard.includes(index)) invCard.classList.add('selected-to-discard');
-                
+
                 invCard.innerHTML = renderCardContent(card);
                 invCard.onclick = () => handleInventoryClick(index);
                 display.appendChild(invCard);
@@ -224,7 +440,7 @@
         function startUsage(index) {
             const card = inventory[index];
             if (card.cost === 0) {
-                if(confirm(`Kijátszod: ${card.nev}?`)) {
+                if (confirm(`Kijátszod: ${card.nev}?`)) {
                     inventory.splice(index, 1);
                     renderInventory();
                 }
@@ -272,7 +488,7 @@
             const cardName = inventory[targetIndex].nev;
             if (confirm(`Kifizeted a költséget és használod a következőt: ${cardName}?`)) {
                 // Remove selected cards and the target card
-                let indicesToRemove = [...selectedForDiscard, targetIndex].sort((a,b) => b-a);
+                let indicesToRemove = [...selectedForDiscard, targetIndex].sort((a, b) => b - a);
                 indicesToRemove.forEach(i => inventory.splice(i, 1));
             }
             isPaying = false;
@@ -295,4 +511,5 @@
         updateStats();
     </script>
 </body>
+
 </html>
