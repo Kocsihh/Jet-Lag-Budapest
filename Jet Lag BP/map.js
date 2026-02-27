@@ -4,6 +4,12 @@ let radarCircles = [];
 let tramLines = [];
 let tramsVisible = true;
 
+// Geolokáció változók
+let myLocationMarker = null;
+let myLocationAccCircle = null;
+let myLocationWatchId = null;
+let myLocationTracking = false;
+
 // Új változók a megállókhoz
 let hiderCircles = [];
 let hidersVisible = false;
@@ -521,6 +527,108 @@ function clearAll() {
     clearHiders();
     localStorage.removeItem('jetLagState');
     // Kerületek nem kerülnek törlésre a felhasználó kérésére
+}
+
+// --- GEOLOKÁCIÓ ---
+
+function toggleMyLocation() {
+    if (myLocationTracking) {
+        stopMyLocation();
+    } else {
+        startMyLocation();
+    }
+}
+
+function startMyLocation() {
+    if (!navigator.geolocation) {
+        updateStatus('A böngésző nem támogatja a geolokációt.');
+        return;
+    }
+
+    updateStatus('Helyzet meghatározása...');
+
+    // Azonnali helyzet
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            placeMyLocationMarker(pos);
+            updateStatus('');
+        },
+        (err) => {
+            updateStatus('Hiba a helyzet meghatározásakor: ' + err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+
+    // Folyamatos követés
+    myLocationWatchId = navigator.geolocation.watchPosition(
+        (pos) => {
+            placeMyLocationMarker(pos);
+        },
+        (err) => {
+            console.warn('Geolokáció hiba:', err);
+        },
+        { enableHighAccuracy: true, maximumAge: 5000 }
+    );
+
+    myLocationTracking = true;
+    const btn = document.getElementById('myLocationBtn');
+    if (btn) { btn.innerText = '📍 Követés: BE'; btn.classList.remove('off'); }
+}
+
+function stopMyLocation() {
+    if (myLocationWatchId !== null) {
+        navigator.geolocation.clearWatch(myLocationWatchId);
+        myLocationWatchId = null;
+    }
+    if (myLocationMarker) { myLocationMarker.setMap(null); myLocationMarker = null; }
+    if (myLocationAccCircle) { myLocationAccCircle.setMap(null); myLocationAccCircle = null; }
+    myLocationTracking = false;
+    const btn = document.getElementById('myLocationBtn');
+    if (btn) { btn.innerText = '📍 Helyzetem'; btn.classList.add('off'); }
+}
+
+function placeMyLocationMarker(pos) {
+    const latLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    const accuracy = pos.coords.accuracy;
+
+    if (!myLocationMarker) {
+        myLocationMarker = new google.maps.Marker({
+            position: latLng,
+            map: map,
+            zIndex: 2000,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 10,
+                fillColor: '#4285F4',
+                fillOpacity: 1,
+                strokeColor: 'white',
+                strokeWeight: 3
+            },
+            title: 'Az én helyzetem'
+        });
+    } else {
+        myLocationMarker.setPosition(latLng);
+    }
+
+    if (!myLocationAccCircle) {
+        myLocationAccCircle = new google.maps.Circle({
+            center: latLng,
+            radius: accuracy,
+            map: map,
+            strokeColor: '#4285F4',
+            strokeOpacity: 0.4,
+            strokeWeight: 1,
+            fillColor: '#4285F4',
+            fillOpacity: 0.1,
+            clickable: false,
+            zIndex: 1999
+        });
+    } else {
+        myLocationAccCircle.setCenter(latLng);
+        myLocationAccCircle.setRadius(accuracy);
+    }
+
+    map.panTo(latLng);
 }
 
 // --- PERSISTENCE ---
