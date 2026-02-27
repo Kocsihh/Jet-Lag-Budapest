@@ -185,12 +185,13 @@ function drawHiders() {
     });
 
     tramData.forEach(line => {
-        // Villamosnál csak minden 3. pontot vesszük, ha túl sűrű (vagy csak a megállókat ha lennének)
-        // Itt most egy egyszerű ritkítást alkalmazunk a teljesítményért
-        const stride = line.commonPath.length > 20 ? 3 : 1;
-        for (let i = 0; i < line.commonPath.length; i += stride) {
-            points.push(line.commonPath[i]);
-        }
+        // Ha vannak névvel jelölt megállók, csak azokat vesszük (pontos megállóhelyek)
+        // Ha nincs névvel ellátott pont (pl. 4-6-os), minden pontot veszünk
+        const hasNamedStops = line.commonPath.some(pt => pt.name);
+        const stopPoints = hasNamedStops
+            ? line.commonPath.filter(pt => pt.name)
+            : line.commonPath;
+        points.push(...stopPoints);
         if (line.branch4) points.push(...line.branch4);
         if (line.branch6) points.push(...line.branch6);
     });
