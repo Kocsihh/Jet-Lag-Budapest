@@ -9,6 +9,7 @@ let myLocationMarker = null;
 let myLocationAccCircle = null;
 let myLocationWatchId = null;
 let myLocationTracking = false;
+let playerMarkers = {}; // Tárolja a többi játékos markerét
 
 // Új változók a megállókhoz
 let hiderCircles = [];
@@ -73,20 +74,24 @@ function initMap() {
         if (line.branch6.length) tramLines.push(new google.maps.Polyline({ path: line.commonPath.concat(line.branch6), strokeColor: "#ffeb3b", strokeOpacity: 0.6, strokeWeight: 3, map: map }));
     });
 
-    seekerMarker = new google.maps.Marker({
-        position: bpCenter,
-        map: map,
-        draggable: true,
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10, fillColor: "#ff4500", fillOpacity: 1, strokeWeight: 2, strokeColor: "white"
-        },
-        label: { text: "HUNYÓ", color: "white", fontWeight: "bold", fontSize: "12px" }
-    });
+    const myRole = localStorage.getItem('local_role');
+    
+    if (myRole !== 'hider') {
+        seekerMarker = new google.maps.Marker({
+            position: bpCenter,
+            map: map,
+            draggable: true,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 10, fillColor: "#ff4500", fillOpacity: 1, strokeWeight: 2, strokeColor: "white"
+            },
+            label: { text: "HUNYÓ", color: "white", fontWeight: "bold", fontSize: "12px" }
+        });
 
-    seekerMarker.addListener('dragend', () => {
-        saveState();
-    });
+        seekerMarker.addListener('dragend', () => {
+            saveState();
+        });
+    }
 
     map.addListener("click", (e) => {
         if (!thermoState.active) return;
@@ -98,6 +103,7 @@ function initMap() {
     });
 
     loadDistrictData();
+    initLocationListener();
 }
 
 async function loadDistrictData() {
@@ -542,11 +548,37 @@ function stopMyLocation() {
     myLocationTracking = false;
     const btn = document.getElementById('myLocationBtn');
     if (btn) { btn.innerText = '📍 Helyzetem'; btn.classList.add('off'); }
+    
+    // Törlés Firebase-ből
+    const roomId = localStorage.getItem('local_roomId');
+    const myUserId = localStorage.getItem('local_userId');
+    if (roomId && myUserId && typeof db !== 'undefined') {
+        db.ref(`rooms/${roomId}/locations/${myUserId}`).remove();
+    }
 }
 
 function placeMyLocationMarker(pos) {
     const latLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     const accuracy = pos.coords.accuracy;
+    
+    // Firebase küldés
+    const roomId = localStorage.getItem('local_roomId');
+    const myUserId = localStorage.getItem('local_userId');
+    const myName = localStorage.getItem('local_playerName');
+    const myRole = localStorage.getItem('local_role');
+    
+    if (roomId && myUserId && typeof db !== 'undefined') {
+        const locRef = db.ref(`rooms/${roomId}/locations/${myUserId}`);
+        locRef.onDisconnect().remove();
+        locRef.set({
+            lat: latLng.lat,
+            lng: latLng.lng,
+            accuracy: accuracy,
+            name: myName,
+            role: myRole,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
 
     if (!myLocationMarker) {
         myLocationMarker = new google.maps.Marker({
@@ -588,11 +620,78 @@ function placeMyLocationMarker(pos) {
     map.panTo(latLng);
 }
 
+function initLocationListener() {
+    const roomId = localStorage.getItem('local_roomId');
+    const myUserId = localStorage.getItem('local_userId');
+    if (!roomId || typeof db === 'undefined') return;
+    
+    db.ref(`rooms/${roomId}/locations`).on('value', (snapshot) => {
+        const locations = snapshot.val() || {};
+        
+        // Remove markers for players no longer in locations
+        for (let uid in playerMarkers) {
+            if (!locations[uid]) {
+                playerMarkers[uid].marker.setMap(null);
+                playerMarkers[uid].circle.setMap(null);
+                delete playerMarkers[uid];
+            }
+        }
+        
+        // Add/Update markers
+        for (let uid in locations) {
+            if (uid === myUserId) continue; // Saját magunkat a kék pötty mutatja
+            
+            const data = locations[uid];
+            const latLng = { lat: data.lat, lng: data.lng };
+            const isHider = data.role === 'hider';
+            
+            const color = isHider ? '#4CAF50' : '#ff4500';
+            
+            if (!playerMarkers[uid]) {
+                const marker = new google.maps.Marker({
+                    position: latLng,
+                    map: map,
+                    zIndex: 1990,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 8,
+                        fillColor: color,
+                        fillOpacity: 1,
+                        strokeColor: 'white',
+                        strokeWeight: 2
+                    },
+                    label: { text: data.name, color: 'white', fontSize: '14px', fontWeight: 'bold' }
+                });
+                
+                const circle = new google.maps.Circle({
+                    center: latLng,
+                    radius: data.accuracy || 50,
+                    map: map,
+                    strokeColor: color,
+                    strokeOpacity: 0.4,
+                    strokeWeight: 1,
+                    fillColor: color,
+                    fillOpacity: 0.1,
+                    clickable: false,
+                    zIndex: 1989
+                });
+                
+                playerMarkers[uid] = { marker, circle };
+            } else {
+                playerMarkers[uid].marker.setPosition(latLng);
+                playerMarkers[uid].circle.setCenter(latLng);
+                playerMarkers[uid].circle.setRadius(data.accuracy || 50);
+                playerMarkers[uid].marker.setLabel({ text: data.name, color: 'white', fontSize: '14px', fontWeight: 'bold' });
+            }
+        }
+    });
+}
+
 // --- PERSISTENCE ---
 
 function saveState() {
     const state = {
-        seekerPos: { lat: seekerMarker.getPosition().lat(), lng: seekerMarker.getPosition().lng() },
+        seekerPos: (typeof seekerMarker !== 'undefined' && seekerMarker) ? { lat: seekerMarker.getPosition().lat(), lng: seekerMarker.getPosition().lng() } : null,
         radars: radarCircles.map(c => ({
             radius: c.getRadius(),
             center: { lat: c.getCenter().lat(), lng: c.getCenter().lng() },
@@ -614,7 +713,7 @@ function loadState() {
     const state = Storage.get('jetLagState');
     if (!state) return;
 
-    if (state.seekerPos) {
+    if (state.seekerPos && typeof seekerMarker !== 'undefined' && seekerMarker) {
         seekerMarker.setPosition(state.seekerPos);
     }
 

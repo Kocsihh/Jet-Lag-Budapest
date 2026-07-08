@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="deck.css">
     <link rel="stylesheet" href="dialog.css">
     
+    <!-- Google Maps -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMOAqGuk1x3mCk9_SeL98wY7g7pXi3sn0&libraries=geometry"></script>
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -21,7 +25,26 @@
     <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
 
     <h1>ROHANÓ PAKLI</h1>
-    <div class="stats" id="deck-stats">Pakli: --/--</div>
+
+    <!-- ==========================================
+         TAB BAR
+         ========================================== -->
+    <div class="tab-bar">
+        <button class="tab-btn active" id="tab-btn-deck" onclick="switchDeckTab('deck')">
+            <span class="tab-icon">🃏</span>
+            <span>Pakli</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-map" onclick="switchDeckTab('map')">
+            <span class="tab-icon">🗺️</span>
+            <span>Térkép</span>
+        </button>
+    </div>
+
+    <!-- ==========================================
+         TAB CONTENT: DECK
+         ========================================== -->
+    <div id="tab-deck" class="tab-content active">
+        <div class="stats" id="deck-stats">Pakli: --/--</div>
 
     <div class="controls">
         <button id="btn1" onclick="drawChoice(1)">Húzz 1</button>
@@ -42,14 +65,32 @@
         <div id="inventory-display"></div>
     </div>
 
-    <!-- Payment info sticky bar -->
-    <div id="status-bar"></div>
+        <!-- Payment info sticky bar -->
+        <div id="status-bar"></div>
+    </div>
+
+    <!-- ==========================================
+         TAB CONTENT: MAP
+         ========================================== -->
+    <div id="tab-map" class="tab-content">
+        <div id="map-status-bar">A Hunyók helyzete a térképen</div>
+        <div class="map-controls">
+            <!-- Bújóknak csak Helyzetem gomb -->
+            <button class="btn-location off" id="myLocationBtn" onclick="toggleMyLocation()">📍 Helyzetem</button>
+            <button class="btn-toggle" id="districtBtn" onclick="toggleDistricts()">Kerületek: KI</button>
+            <button class="btn-toggle" id="tramBtn" onclick="toggleTrams()">Villamosok: BE</button>
+        </div>
+        <div id="map"></div>
+    </div>
 
     <script src="storage.js"></script>
     <script src="toast.js"></script>
     <script src="dialog.js"></script>
     <script src="cards.js"></script>
     <script src="deck.js"></script>
+    <script src="map_data.js"></script>
+    <script src="map.js"></script>
+    <script src="deck_tabs.js"></script>
 </body>
 
 </html>

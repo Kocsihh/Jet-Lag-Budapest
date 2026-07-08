@@ -22,6 +22,9 @@ async function initFirebaseDeck() {
         drawnPool      = Storage.get('jetLag_drawnPool', []);
         activeEffects  = Storage.get('jetLag_activeEffects', []);
         
+        // Inicializáljuk a térképet, ha van
+        if (typeof initMap === 'function') initMap();
+        
         // Refresh UI
         initDeck();
     });
