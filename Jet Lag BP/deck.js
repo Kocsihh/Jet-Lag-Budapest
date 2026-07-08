@@ -44,8 +44,8 @@ function updateStats() {
         `Pakli: ${currentDeck.length} / ${ORIGINAL_DECK.length}`;
 }
 
-function resetDeck() {
-    if (!confirm('Biztosan újraindítod a paklit? Minden kártya visszakerül, az inventory törlődik és az aktív hatások megszűnnek.')) return;
+async function resetDeck() {
+    if (!(await customConfirm('Biztosan újraindítod a paklit?<br>Minden kártya visszakerül, az inventory törlődik és az aktív hatások megszűnnek.'))) return;
 
     currentDeck   = [...ORIGINAL_DECK];
     inventory     = [];
@@ -221,7 +221,7 @@ function handleInventoryClick(index) {
     }
 }
 
-function playCard(index) {
+async function playCard(index) {
     const card = inventory[index];
     if (isPaying && (index === targetIndex || selectedForDiscard.includes(index))) return;
     if (card.tipus === 'Idő') {
@@ -230,7 +230,7 @@ function playCard(index) {
     }
     if (card.cost > 0) { startUsage(index); return; }
 
-    if (confirm(`Kijátszod: ${card.nev}?`)) {
+    if (await customConfirm(`Kijátszod: <strong>${card.nev}</strong>?`)) {
         activateCardEffect(card);
         inventory.splice(index, 1);
         saveDeckState();
@@ -277,9 +277,9 @@ function handleDiscardSelection(index) {
     }
 }
 
-function finalizeUsage() {
+async function finalizeUsage() {
     const targetCard = inventory[targetIndex];
-    if (!confirm(`Kifizeted a költséget és használod: ${targetCard.nev}?`)) {
+    if (!(await customConfirm(`Kifizeted a költséget és használod: <strong>${targetCard.nev}</strong>?`))) {
         isPaying          = false;
         targetIndex       = -1;
         selectedForDiscard = [];

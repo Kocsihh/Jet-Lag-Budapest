@@ -1,0 +1,106 @@
+/* Bottom Sheet Confirm Dialog */
+#bottom-sheet-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(2, 12, 27, 0.6);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#bottom-sheet-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#bottom-sheet {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    z-index: 10001;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    box-sizing: border-box;
+}
+
+#bottom-sheet.show {
+    transform: translateY(0);
+}
+
+#bottom-sheet-inner {
+    background: var(--bg-nav, #0a192f);
+    border-top: 1px solid rgba(100, 255, 218, 0.25);
+    border-radius: 20px 20px 0 0;
+    padding: 16px 24px 28px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Drag handle pill */
+.sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(100, 255, 218, 0.3);
+    border-radius: 4px;
+    margin: 0 auto 20px;
+}
+
+.sheet-msg {
+    color: var(--text-main, #ccd6f6);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.sheet-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.sheet-btn {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1px solid;
+}
+
+.sheet-btn-no {
+    background: rgba(244, 67, 54, 0.08);
+    color: var(--danger, #f44336);
+    border-color: rgba(244, 67, 54, 0.4);
+}
+
+.sheet-btn-no:active {
+    background: rgba(244, 67, 54, 0.2);
+    transform: scale(0.97);
+}
+
+.sheet-btn-yes {
+    background: rgba(100, 255, 218, 0.08);
+    color: var(--accent, #64ffda);
+    border-color: rgba(100, 255, 218, 0.4);
+}
+
+.sheet-btn-yes:active {
+    background: rgba(100, 255, 218, 0.2);
+    transform: scale(0.97);
+}
+
+/* Safe area padding for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    #bottom-sheet-inner {
+        padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    }
+}

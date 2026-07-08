@@ -4,8 +4,8 @@ let gameActive = Storage.get('jetLag_gameActive', false);
 let exhaustedQuestions = Storage.get('jetLag_exhausted', []);
 let logEntries = Storage.get('jetLag_log', []);
 
-function startGame() {
-    if (confirm("Készen állsz az indulásra? A kérdések el fognak fogyni a játék során!")) {
+async function startGame() {
+    if (await customConfirm("Készen állsz az indulásra?<br>A kérdések el fognak fogyni a játék során!", "Indítás", "Mégsem")) {
         gameActive = true;
         exhaustedQuestions = [];
         saveState();
@@ -14,8 +14,8 @@ function startGame() {
     }
 }
 
-function endGame() {
-    if (confirm("Biztosan befejezed a játékot? Minden kérdés újra elérhető lesz.")) {
+async function endGame() {
+    if (await customConfirm("Biztosan befejezed a játékot?<br>Minden kérdés újra elérhető lesz.")) {
         gameActive = false;
         exhaustedQuestions = [];
         saveState();
@@ -180,8 +180,8 @@ function stopTimer() {
     Storage.remove('jetLag_timerLabel');
 }
 
-function undoLast() {
-    if (confirm("Biztosan visszavonod az utolsó kérdést?")) {
+async function undoLast() {
+    if (await customConfirm("Biztosan visszavonod az utolsó kérdést?")) {
         if (lastAction && lastAction.wasExhaustedAdded) {
             exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
             saveState();
@@ -198,8 +198,8 @@ function undoLast() {
     }
 }
 
-function resetTimer() {
-    if (confirm("Biztosan manuálisan törlöd a timert? A jelenlegi kérdés újra elérhető lesz.")) {
+async function resetTimer() {
+    if (await customConfirm("Biztosan törlöd a timert?<br>A jelenlegi kérdés újra elérhető lesz.")) {
         if (lastAction && lastAction.wasExhaustedAdded) {
             exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
             saveState();
