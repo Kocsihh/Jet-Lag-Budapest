@@ -1,7 +1,8 @@
 let countdown;
 let lastAction = null;
-let gameActive = JSON.parse(localStorage.getItem('jetLag_gameActive')) || false;
-let exhaustedQuestions = JSON.parse(localStorage.getItem('jetLag_exhausted')) || [];
+let gameActive = Storage.get('jetLag_gameActive', false);
+let exhaustedQuestions = Storage.get('jetLag_exhausted', []);
+let logEntries = Storage.get('jetLag_log', []);
 
 function startGame() {
     if (confirm("Készen állsz az indulásra? A kérdések el fognak fogyni a játék során!")) {
@@ -24,9 +25,10 @@ function endGame() {
 }
 
 function saveState() {
-    localStorage.setItem('jetLag_gameActive', JSON.stringify(gameActive));
-    localStorage.setItem('jetLag_exhausted', JSON.stringify(exhaustedQuestions));
-    localStorage.setItem('jetLag_lastAction', JSON.stringify(lastAction));
+    Storage.set('jetLag_gameActive', gameActive);
+    Storage.set('jetLag_exhausted', exhaustedQuestions);
+    Storage.set('jetLag_lastAction', lastAction);
+    Storage.set('jetLag_log', logEntries);
 }
 
 function updateUI() {
@@ -112,13 +114,23 @@ function handleOutcome(type) {
 
 
 function addLogEntry(time, text) {
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-text">${text}</span>`;
-    document.getElementById('log-content').prepend(entry);
+    logEntries.unshift({ time, text });
+    saveState();
+    renderLog();
+}
 
-    const count = document.getElementById('log-content').children.length;
-    document.getElementById('log-count').innerText = `${count} bejegyzés`;
+function renderLog() {
+    const logContent = document.getElementById('log-content');
+    logContent.innerHTML = '';
+    
+    logEntries.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.innerHTML = `<span class="log-time">[${entry.time}]</span><span class="log-text">${entry.text}</span>`;
+        logContent.appendChild(div);
+    });
+
+    document.getElementById('log-count').innerText = `${logEntries.length} bejegyzés`;
 }
 
 function startTimer(minutes, labelText, endTimeOverride = null) {
@@ -136,8 +148,8 @@ function startTimer(minutes, labelText, endTimeOverride = null) {
     let endTime = endTimeOverride || (Date.now() + minutes * 60 * 1000);
 
     // Save timer state
-    localStorage.setItem('jetLag_timerEnd', endTime);
-    localStorage.setItem('jetLag_timerLabel', labelText);
+    Storage.set('jetLag_timerEnd', endTime);
+    Storage.set('jetLag_timerLabel', labelText);
 
     const updateDisplay = () => {
         const now = Date.now();
@@ -151,7 +163,7 @@ function startTimer(minutes, labelText, endTimeOverride = null) {
             stopTimer();
             // Don't alert if we're just loading a page where timer already expired
             if (!endTimeOverride || (endTimeOverride - now) > -2000) {
-                alert("A várakozási idő lejárt! Új kérdést tehetsz fel.");
+                showToast("A várakozási idő lejárt! Új kérdést tehetsz fel.", 'success', 5000);
             }
         }
     };
@@ -164,8 +176,8 @@ function stopTimer() {
     clearInterval(countdown);
     document.getElementById('timer-container').style.display = 'none';
     document.getElementById('main-grid').classList.remove('disabled');
-    localStorage.removeItem('jetLag_timerEnd');
-    localStorage.removeItem('jetLag_timerLabel');
+    Storage.remove('jetLag_timerEnd');
+    Storage.remove('jetLag_timerLabel');
 }
 
 function undoLast() {
@@ -177,11 +189,9 @@ function undoLast() {
         }
 
         stopTimer();
-        const logContent = document.getElementById('log-content');
-        if (logContent.firstChild) {
-            logContent.removeChild(logContent.firstChild);
-            const count = logContent.children.length;
-            document.getElementById('log-count').innerText = `${count} bejegyzés`;
+        if (logEntries.length > 0) {
+            logEntries.shift(); // Remove the last added log entry
+            renderLog();
         }
         lastAction = null;
         saveState();
@@ -205,18 +215,19 @@ function resetTimer() {
 
 // Init
 window.addEventListener('load', () => {
-    lastAction = JSON.parse(localStorage.getItem('jetLag_lastAction')) || null;
+    lastAction = Storage.get('jetLag_lastAction', null);
     updateUI();
+    renderLog();
 
-    const savedEnd = localStorage.getItem('jetLag_timerEnd');
-    const savedLabel = localStorage.getItem('jetLag_timerLabel');
+    const savedEnd = Storage.get('jetLag_timerEnd');
+    const savedLabel = Storage.get('jetLag_timerLabel');
     if (savedEnd) {
         const endTime = parseInt(savedEnd);
         if (endTime > Date.now()) {
             startTimer(0, savedLabel, endTime);
         } else {
-            localStorage.removeItem('jetLag_timerEnd');
-            localStorage.removeItem('jetLag_timerLabel');
+            Storage.remove('jetLag_timerEnd');
+            Storage.remove('jetLag_timerLabel');
         }
     }
 });
