@@ -312,16 +312,19 @@ function updateStatus(msg) {
     bar.style.display = msg ? 'block' : 'none';
 }
 
-// --- INIT ---
-window.addEventListener('load', () => {
-    updateStats();
+// Inicializálás
+function initDeck() {
     renderInventory();
     renderActiveEffects();
-
+    updateStats();
+    
+    // Kezdeti gomb állapot: csak akkor tilos, ha már épp fizetünk
+    setDrawButtons(isPaying);
+    
     if (drawnPool.length > 0) {
         renderDrawnPool();
         setDrawButtons(true);
     }
 
     setInterval(updateActiveTimers, 1000);
-});
+}

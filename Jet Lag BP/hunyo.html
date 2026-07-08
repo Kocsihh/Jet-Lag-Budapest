@@ -4,203 +4,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jet Lag Budapest: Hunyó Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="hunyo.css">
+    <title>Hunyó Központ | Jet Lag Budapest</title>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMOAqGuk1x3mCk9_SeL98wY7g7pXi3sn0&libraries=geometry"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="dialog.css">
 </head>
 
 <body>
-    <a href="./index.html" class="home-btn">🏠</a>
-    <header>
-        <h1>Hunyó Dashboard</h1>
-        <div class="game-controls">
-            <button id="btn-start-game" class="session-btn start" onclick="startGame()">Játék Indítása</button>
-            <button id="btn-end-game" class="session-btn end" onclick="endGame()" style="display: none;">Játék
-                Vége</button>
-        </div>
-        <div class="stats">Válassz kérdést és rögzítsd a választ!</div>
-    </header>
+    <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
 
-    <!-- Outcome Selection Modal -->
-    <div id="outcome-modal" class="modal-overlay">
+    <h1>HUNYÓ KÖZPONT</h1>
+
+    <!-- ==========================================
+         TAB BAR
+         ========================================== -->
+    <div class="tab-bar">
+        <button class="tab-btn active" id="tab-btn-questions" onclick="switchHunyoTab('questions')">
+            <span class="tab-icon">🕵️</span>
+            <span>Kérdések</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-map" onclick="switchHunyoTab('map')">
+            <span class="tab-icon">🗺️</span>
+            <span>Térkép</span>
+        </button>
+    </div>
+
+    <!-- ==========================================
+         TAB CONTENT: QUESTIONS (HUNYO)
+         ========================================== -->
+    <div id="tab-questions" class="tab-content active">
+        <div class="game-controls">
+            <button id="btn-start-game" class="session-btn start" onclick="startGame()">▶ Játék Indítása</button>
+            <button id="btn-end-game" class="session-btn end" onclick="endGame()" style="display: none;">⏹
+                Befejezés</button>
+        </div>
+
+        <div id="timer-container">
+            <div class="timer-msg" id="timer-label">Várakozás...</div>
+            <div id="timer-display">00:00</div>
+            <div class="timer-controls">
+                <button class="control-btn undo" onclick="undoLast()">⏪ Visszavonás</button>
+                <button class="control-btn reset" onclick="resetTimer()">⏹ Timer Törlése</button>
+            </div>
+        </div>
+
+        <div class="dashboard-grid" id="main-grid">
+            <!-- 1. FOTÓ -->
+            <div class="category-section section-egyezeto">
+                <div class="category-title">Egyezetető kérdések</div>
+                <div class="button-grid">
+                    <button class="q-btn" onclick="askQuestion('Pest/Buda', 5)">
+                        <span>Pest/Buda (2,2)</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Ugyanaz a villamosvonal?', 5)">
+                        <span>Ugyanaz a villamosvonal? (2,1)</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Ugyanaz a metróvonal?', 5)">
+                        <span>Ugyanaz a metróvonal? (2,1)</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Ugyanaz a kerület?', 5)">
+                        <span>Ugyanaz a kerület? (2,1)</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Ugyanaz a legközelebbi kórház?', 5)">
+                        <span>Ugyanaz a legközelebbi kórház? (2,1)</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Ugyanaz a legközelebbi mozi?', 5)">
+                        <span>Ugyanaz a legközelebbi mozi? (2,1)</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Ugyanaz a legközelebbi Meki?', 5)">
+                        <span>Ugyanaz a legközelebbi Meki? (2,1)</span><span class="reward-info">5p timer</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. KERÜLET -->
+            <div class="category-section section-mero">
+                <div class="category-title">Mérő kérdések (2,1)</div>
+                <div class="button-grid">
+                    <button class="q-btn" onclick="askQuestion('Kórház?', 10)">
+                        <span>Kórház?</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Mozi?', 10)">
+                        <span>Mozi?</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Meki?', 10)">
+                        <span>Meki?</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Reptér?', 10)">
+                        <span>Reptér?</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Állatkert?', 10)">
+                        <span>Állatkert?</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Budapest Park?', 10)">
+                        <span>Budapest Park?</span><span class="reward-info">10p timer</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. KÖZLEKEDÉS -->
+            <div class="category-section section-radar">
+                <div class="category-title"> Radar (3,1)</div>
+                <div class="button-grid">
+                    <button class="q-btn" onclick="askQuestion('Radar 500m?', 5)">
+                        <span>Radar 500m?</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Radar 1km?', 10)">
+                        <span>Radar 1km?</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Radar egyéni?', 15)">
+                        <span>Radar egyéni?</span><span class="reward-info">15p timer</span>
+                </div>
+            </div>
+
+            <!-- 4. KÖRNYEZET -->
+            <div class="category-section section-homero">
+                <div class="category-title">Hőmérő (3,1)</div>
+                <div class="button-grid">
+                    <button class="q-btn" onclick="askQuestion('Hőmérő 2km?', 5)">
+                        <span>Hőmérő 2km?</span><span class="reward-info">5p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Hőmérő 5km?', 5)">
+                        <span>Hőmérő 5km?</span><span class="reward-info">5p timer</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="category-section section-fotó">
+                <div class="category-title">Fotó kérdések</div>
+                <div class="button-grid">
+                    <button class="q-btn" onclick="askQuestion('Legmagasabb épület', 10)">
+                        <span>Legmagasabb épület(3,1)</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Állomás', 10)">
+                        <span>Állomás(3,1)</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Égbolt', 10)">
+                        <span>Égbolt(2,1)</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Fa', 10)">
+                        <span>Fa(2,1)</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Szelfi', 10)">
+                        <span>Szelfi(2,1)</span><span class="reward-info">10p timer</span>
+                    </button>
+                    <button class="q-btn" onclick="askQuestion('Legszélesebb út', 10)">
+                        <span>Legszélesebb út(3,1)</span><span class="reward-info">10p timer</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="log">
+            <div class="log-header">
+                <h3>📝 History</h3>
+                <span class="stats" id="log-count">0 bejegyzés</span>
+            </div>
+            <div id="log-content"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         TAB CONTENT: MAP
+         ========================================== -->
+    <div id="tab-map" class="tab-content">
+        <div id="map-status-bar">Válassz egy pontot a térképen!</div>
+
+        <div class="map-controls">
+            <button class="btn-toggle" id="tramBtn" onclick="toggleTrams()">Villamosok: BE</button>
+            <button class="btn-toggle" id="districtBtn" onclick="toggleDistricts()">Kerületek: KI</button>
+            <button class="btn-toggle off" id="editDistBtn" onclick="toggleDistrictEditing()">Szerkesztés: KI</button>
+
+            <!-- Radarok -->
+            <button class="btn-radar" onclick="drawRadar(500)">R 500m</button>
+            <button class="btn-radar" onclick="drawRadar(1000)">R 1km</button>
+            <button class="btn-radar" onclick="promptCustomRadar()">R Egyéni</button>
+
+            <!-- Hőmérők -->
+            <button class="btn-thermo" onclick="startThermometer(2000)">Hő 2km</button>
+            <button class="btn-thermo" onclick="startThermometer(5000)">Hő 5km</button>
+
+            <!-- Új Funkció -->
+            <button class="btn-hiders" onclick="togglePossibleHiders()">Megállók (500m)</button>
+            <button class="btn-swap" id="swapBtn" onclick="swapColors()">Színcsere</button>
+            <button class="btn-location off" id="myLocationBtn" onclick="toggleMyLocation()">📍 Helyzetem</button>
+            <button class="btn-reset-map" onclick="clearAll()">Törlés</button>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <!-- ==========================================
+         OUTCOME MODAL (ONLY FOR QUESTIONS)
+         ========================================== -->
+    <div class="modal-overlay" id="outcome-modal">
         <div class="modal-content">
-            <h2 id="outcome-q-name">Kérdés neve</h2>
+            <h2 id="outcome-q-name">Kérdés</h2>
             <div class="outcome-options">
                 <button class="outcome-btn" onclick="handleOutcome('answered')">
-                    <strong>VÁLASZOLT</strong>
-                    <span>Timer + Kérdés kuka</span>
+                    <strong>✅ Válaszoltak</strong>
+                    <span>Kérdés elhasználódik, timer indul.</span>
                 </button>
                 <button class="outcome-btn" onclick="handleOutcome('veto')">
-                    <strong>VÉTÓ</strong>
-                    <span>Timer + Kérdés marad</span>
+                    <strong>❌ Vétó (Kártya)</strong>
+                    <span>Kérdés megmarad (dupla idő lesz), NINCS válasz, NINCS timer.</span>
                 </button>
                 <button class="outcome-btn" onclick="handleOutcome('superveto')">
-                    <strong>SZUPER VÉTÓ</strong>
-                    <span>Timer + Kérdés kuka</span>
+                    <strong>☢️ Szuper Vétó (Kártya)</strong>
+                    <span>A kérdés elhasználódik, NINCS válasz, de a timer INDUL.</span>
                 </button>
             </div>
-            <button class="modal-cancel" onclick="closeOutcomeModal()">Mégse</button>
+            <button class="modal-cancel" onclick="closeOutcomeModal()">Mégsem</button>
         </div>
     </div>
 
-    <!-- Timer Section -->
-    <div id="timer-container">
-        <div class="timer-msg" id="timer-label">Várakozás a következő kérdésig...</div>
-        <div id="timer-display">05:00</div>
-        <div class="timer-controls">
-            <button class="control-btn undo" onclick="undoLast()">Visszavonás</button>
-            <button class="control-btn reset" onclick="resetTimer()">Reset</button>
-        </div>
-    </div>
-
-    <div class="dashboard-grid" id="main-grid">
-        <!-- Egyeztető questions -->
-        <section class="category-section">
-            <div class="category-title">🤝 Egyeztető Kérdések</div>
-            <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Pest / Buda (3 lap)', 5, '2/2')">
-                    <span>Pest / Buda</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 2</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Ugyanaz a villamosvonal?', 5, '2/1')">
-                    <span>Ugyanaz a villamosvonal?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Ugyanaz a metróvonal?', 5, '2/1')">
-                    <span>Ugyanaz a metróvonal?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Ugyanaz a kerület?', 5, '2/1')">
-                    <span>Ugyanaz a Kerület?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Legközelebbi kórház?', 5, '2/1')">
-                    <span>Legközelebbi Kórház?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Legközelebbi mozi?', 5, '2/1')">
-                    <span>legközelebbi mozi?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Legközelebbi Meki?', 5, '2/1')">
-                    <span>Legközelebbi Meki?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-            </div>
-        </section>
-
-        <!-- Mérő questions -->
-        <section class="category-section">
-            <div class="category-title">📏 Mérő Kérdések</div>
-            <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Közelebb: Kórház?', 5, '2/1')">
-                    <span>Kórház?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Mozi?', 5, '2/1')">
-                    <span>Mozi?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Meki?', 5, '2/1')">
-                    <span>Meki?</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Reptér', 5, '2/1')">
-                    <span>Reptér</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Állatkert', 5, '2/1')">
-                    <span>Állatkert</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Közelebb: Vidámpark', 5, '2/1')">
-                    <span>Vidámpark</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-            </div>
-        </section>
-
-        <!-- Radar -->
-        <section class="category-section">
-            <div class="category-title">📡 Radar</div>
-            <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Radar: 500m', 5, '3/1')">
-                    <span>500m</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Radar: 1km', 5, '3/1')">
-                    <span>1km</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Radar: Egyéni', 5, '3/1')">
-                    <span>Egyéni</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-            </div>
-        </section>
-
-        <!-- Hőmérő -->
-        <section class="category-section">
-            <div class="category-title">🌡️ Hőmérő</div>
-            <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Hőmérő: 2km', 5, '3/1')">
-                    <span>2km</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Hőmérő: 5km', 5, '3/1')">
-                    <span>5km</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-            </div>
-        </section>
-
-        <!-- Fotó -->
-        <section class="category-section section-foto">
-            <div class="category-title">📸 Fotó Kihívások</div>
-            <div class="button-grid">
-                <button class="q-btn" onclick="askQuestion('Fotó: Legmagasabb épület', 10, '3/1')">
-                    <span>Legmagasabb épület</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Az állomásról egy fotó', 10, '3/1')">
-                    <span>Állomás</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Égbolt', 10, '2/1')">
-                    <span>Égbolt</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Egy fa', 10, '2/1')">
-                    <span>Egy fa</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Szelfi', 10, '2/1')">
-                    <span>Szelfi</span>
-                    <div class="reward-info">Húzz: 2 / Tarts: 1</div>
-                </button>
-                <button class="q-btn" onclick="askQuestion('Fotó: Legszélesebb út', 10, '3/1')">
-                    <span>Legszélesebb út</span>
-                    <div class="reward-info">Húzz: 3 / Tarts: 1</div>
-                </button>
-            </div>
-        </section>
-    </div>
-
-    <!-- Log -->
-    <div id="log">
-        <div class="log-header">
-            <strong>ELŐZMÉNYEK</strong>
-            <span id="log-count" style="font-size: 0.8rem; opacity: 0.5;">0 bejegyzés</span>
-        </div>
-        <div id="log-content"></div>
-    </div>
-
+    <!-- ==========================================
+         SCRIPTS
+         ========================================== -->
     <script src="storage.js"></script>
     <script src="toast.js"></script>
     <script src="dialog.js"></script>
     <script src="hunyo.js"></script>
+    <script src="map_data.js"></script>
+    <script src="map.js"></script>
+    <script src="hunyo_tabs.js"></script>
 </body>
 
 </html>

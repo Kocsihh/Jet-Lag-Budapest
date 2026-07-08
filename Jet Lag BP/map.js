@@ -407,7 +407,7 @@ function swapColors() {
 // --- EGYÉB SEGÉDFUNKCIÓK ---
 
 function updateStatus(text) {
-    const el = document.getElementById('status-bar');
+    const el = document.getElementById('map-status-bar');
     if (text) {
         el.innerText = text; el.style.display = 'block';
     } else {
@@ -669,11 +669,14 @@ function loadState() {
             }
         }, 500);
     } else {
-        document.getElementById('districtBtn').classList.add('off');
+        const dBtn = document.getElementById('districtBtn');
+        if (dBtn) dBtn.classList.add('off');
     }
 }
 
-window.onload = () => {
-    initMap();
-    setTimeout(loadState, 500); // Biztosítsuk, hogy a térkép betöltött
+// initMap is called by hunyo_tabs.js
+const originalInitMap = initMap;
+initMap = () => {
+    originalInitMap();
+    setTimeout(loadState, 500);
 };

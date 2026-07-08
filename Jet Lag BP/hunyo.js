@@ -2,12 +2,14 @@ let countdown;
 let lastAction = null;
 let gameActive = Storage.get('jetLag_gameActive', false);
 let exhaustedQuestions = Storage.get('jetLag_exhausted', []);
+let vetoedQuestions = Storage.get('jetLag_vetoed', {});
 let logEntries = Storage.get('jetLag_log', []);
 
 async function startGame() {
     if (await customConfirm("Készen állsz az indulásra?<br>A kérdések el fognak fogyni a játék során!", "Indítás", "Mégsem")) {
         gameActive = true;
         exhaustedQuestions = [];
+        vetoedQuestions = {};
         saveState();
         updateUI();
         addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), "--- JÁTÉK ELKEZDŐDÖTT ---");
@@ -18,6 +20,7 @@ async function endGame() {
     if (await customConfirm("Biztosan befejezed a játékot?<br>Minden kérdés újra elérhető lesz.")) {
         gameActive = false;
         exhaustedQuestions = [];
+        vetoedQuestions = {};
         saveState();
         updateUI();
         addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), "--- JÁTÉK VÉGET ÉRT ---");
@@ -27,6 +30,7 @@ async function endGame() {
 function saveState() {
     Storage.set('jetLag_gameActive', gameActive);
     Storage.set('jetLag_exhausted', exhaustedQuestions);
+    Storage.set('jetLag_vetoed', vetoedQuestions);
     Storage.set('jetLag_lastAction', lastAction);
     Storage.set('jetLag_log', logEntries);
 }
@@ -36,17 +40,32 @@ function updateUI() {
     document.getElementById('btn-start-game').style.display = gameActive ? 'none' : 'block';
     document.getElementById('btn-end-game').style.display = gameActive ? 'block' : 'none';
 
-    // Question buttons exhaustion
+    // Question buttons exhaustion & veto info
     const buttons = document.querySelectorAll('.q-btn');
     buttons.forEach(btn => {
         const onClickAttr = btn.getAttribute('onclick');
-        const qMatch = onClickAttr.match(/askQuestion\('([^']+)'/);
+        const qMatch = onClickAttr.match(/askQuestion\('([^']+)',\s*(\d+)/);
         if (qMatch) {
             const qName = qMatch[1];
+            const baseMinutes = parseInt(qMatch[2]);
+            const vCount = vetoedQuestions[qName] || 0;
+            const actualMinutes = baseMinutes * Math.pow(2, vCount);
+
             if (exhaustedQuestions.includes(qName)) {
                 btn.classList.add('exhausted');
             } else {
                 btn.classList.remove('exhausted');
+            }
+
+            const rewardSpan = btn.querySelector('.reward-info');
+            if (rewardSpan) {
+                if (vCount > 0 && !exhaustedQuestions.includes(qName)) {
+                    rewardSpan.innerText = `${actualMinutes}p timer (Vétó x${vCount})`;
+                    rewardSpan.style.color = '#ff4500';
+                } else {
+                    rewardSpan.innerText = `${baseMinutes}p timer`;
+                    rewardSpan.style.color = '';
+                }
             }
         }
     });
@@ -54,11 +73,15 @@ function updateUI() {
 
 let pendingQuestion = null;
 
-function askQuestion(qName, minutes, reward = "") {
+function askQuestion(qName, baseMinutes, reward = "") {
     if (exhaustedQuestions.includes(qName)) return;
 
-    pendingQuestion = { qName, minutes, reward };
-    document.getElementById('outcome-q-name').innerText = qName;
+    const vCount = vetoedQuestions[qName] || 0;
+    const actualMinutes = baseMinutes * Math.pow(2, vCount);
+
+    pendingQuestion = { qName, minutes: actualMinutes, reward };
+    const modalTitle = vCount > 0 ? `${qName} (Vétózva x${vCount})` : qName;
+    document.getElementById('outcome-q-name').innerText = modalTitle;
     document.getElementById('outcome-modal').style.display = 'flex';
 }
 
@@ -79,11 +102,14 @@ function handleOutcome(type) {
         minutes: minutes,
         reward: reward,
         wasExhaustedAdded: false,
+        wasVetoedAdded: false,
         outcomeType: type
     };
 
     let logMsg = qName;
     if (reward) logMsg += ` [${reward}]`;
+
+    let shouldStartTimer = true;
 
     if (type === 'answered') {
         logMsg += " (Válaszolt)";
@@ -93,7 +119,11 @@ function handleOutcome(type) {
         }
     } else if (type === 'veto') {
         logMsg += " (Vétó)";
-        // Question stays available, just timer starts
+        shouldStartTimer = false;
+        if (gameActive) {
+            vetoedQuestions[qName] = (vetoedQuestions[qName] || 0) + 1;
+            lastAction.wasVetoedAdded = true;
+        }
     } else if (type === 'superveto') {
         logMsg += " (Szuper Vétó)";
         if (gameActive) {
@@ -108,7 +138,9 @@ function handleOutcome(type) {
     }
 
     addLogEntry(timeStr, logMsg);
-    startTimer(minutes, `Várakozás... [${logMsg}]`);
+    if (shouldStartTimer) {
+        startTimer(minutes, `Várakozás... [${logMsg}]`);
+    }
     closeOutcomeModal();
 }
 
@@ -182,8 +214,16 @@ function stopTimer() {
 
 async function undoLast() {
     if (await customConfirm("Biztosan visszavonod az utolsó kérdést?")) {
-        if (lastAction && lastAction.wasExhaustedAdded) {
-            exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
+        if (lastAction) {
+            if (lastAction.wasExhaustedAdded) {
+                exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
+            }
+            if (lastAction.wasVetoedAdded) {
+                vetoedQuestions[lastAction.name]--;
+                if (vetoedQuestions[lastAction.name] <= 0) {
+                    delete vetoedQuestions[lastAction.name];
+                }
+            }
             saveState();
             updateUI();
         }
@@ -192,6 +232,7 @@ async function undoLast() {
         if (logEntries.length > 0) {
             logEntries.shift(); // Remove the last added log entry
             renderLog();
+
         }
         lastAction = null;
         saveState();
@@ -200,8 +241,16 @@ async function undoLast() {
 
 async function resetTimer() {
     if (await customConfirm("Biztosan törlöd a timert?<br>A jelenlegi kérdés újra elérhető lesz.")) {
-        if (lastAction && lastAction.wasExhaustedAdded) {
-            exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
+        if (lastAction) {
+            if (lastAction.wasExhaustedAdded) {
+                exhaustedQuestions = exhaustedQuestions.filter(q => q !== lastAction.name);
+            }
+            if (lastAction.wasVetoedAdded) {
+                vetoedQuestions[lastAction.name]--;
+                if (vetoedQuestions[lastAction.name] <= 0) {
+                    delete vetoedQuestions[lastAction.name];
+                }
+            }
             saveState();
             updateUI();
         }
@@ -213,21 +262,22 @@ async function resetTimer() {
     }
 }
 
-// Init
-window.addEventListener('load', () => {
+// Inicializálás
+function initHunyo() {
     lastAction = Storage.get('jetLag_lastAction', null);
     updateUI();
     renderLog();
 
-    const savedEnd = Storage.get('jetLag_timerEnd');
-    const savedLabel = Storage.get('jetLag_timerLabel');
-    if (savedEnd) {
-        const endTime = parseInt(savedEnd);
-        if (endTime > Date.now()) {
-            startTimer(0, savedLabel, endTime);
-        } else {
-            Storage.remove('jetLag_timerEnd');
-            Storage.remove('jetLag_timerLabel');
-        }
+    // Restart timer visually if it's currently running
+    const endTime = Storage.get('jetLag_timerEnd', null);
+    if (endTime && endTime > Date.now()) {
+        const remainingMs = endTime - Date.now();
+        const label = Storage.get('jetLag_timerLabel', 'Várakozás');
+        startTimer(label, remainingMs / 60000, endTime);
+    } else if (endTime && endTime <= Date.now()) {
+        // Clear if we loaded the page and timer already expired
+        Storage.remove('jetLag_timerEnd');
+        Storage.remove('jetLag_timerLabel');
     }
-});
+}
+// Note: window.addEventListener('load', initHunyo) is now handled by runner.js
