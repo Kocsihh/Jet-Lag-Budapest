@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jet Lag: Budapest - Menü</title>
+    <title>Jet Lag: Budapest - Lobby</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -21,50 +21,85 @@
 
         .container {
             padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         h1 {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             color: #ff4500;
             font-size: 2.5em;
             letter-spacing: 2px;
             text-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
         }
 
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        input {
+            width: 100%;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+            font-size: 1.1em;
+            box-sizing: border-box;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
             background: #1a1a1a;
             color: white;
-            text-decoration: none;
-            padding: 20px;
-            width: 80%;
-            max-width: 350px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 1.2em;
             border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
             transition: all 0.3s;
+            margin-bottom: 10px;
         }
 
-        a:active {
+        button:active, button.primary {
             background: #ff4500;
-            transform: scale(0.95);
             border-color: #ff4500;
+            transform: scale(0.98);
+        }
+        
+        button:disabled {
+            background: #333;
+            border-color: #222;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        span.icon {
-            margin-right: 15px;
-            font-size: 1.4em;
+        .hidden { display: none; }
+        
+        .role-btn { display: flex; justify-content: space-between; align-items: center; }
+        .role-count { background: #333; padding: 2px 8px; border-radius: 10px; font-size: 0.9em; }
+
+        .player-list {
+            text-align: left;
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
+        .player-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #222;
+        }
+        .player-item:last-child { border-bottom: none; }
+        .player-hider { color: #4CAF50; }
+        .player-seeker { color: #2196F3; }
 
         .footer {
             position: absolute;
@@ -72,6 +107,16 @@
             width: 100%;
             color: #444;
             font-size: 0.8em;
+        }
+        
+        #roomCodeDisplay {
+            font-size: 2em;
+            letter-spacing: 5px;
+            color: #fff;
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
     </style>
     <link rel="stylesheet" href="toast.css">
@@ -81,16 +126,214 @@
     <div class="container">
         <h1>JET LAG<br><span style="color:white; font-size: 0.5em; vertical-align: middle;">BUDAPEST</span></h1>
 
-        <div class="menu">
-            <a href="./deck.html"><span class="icon">🏃</span> Bújó Pakli</a>
-            <a href="./hunyo.html"><span class="icon">🕵️</span> Hunyó Központ</a>
+        <!-- 1. Képernyő: Csatlakozás / Létrehozás -->
+        <div id="screen-join">
+            <div class="form-group">
+                <input type="text" id="playerName" placeholder="Neved (pl. Peti)" maxlength="15">
+            </div>
+            <button class="primary" onclick="createRoom()">Új Játék Létrehozása</button>
+            <div style="margin: 20px 0; color: #666;">VAGY</div>
+            <div class="form-group">
+                <input type="text" id="roomCodeInput" placeholder="Szobakód (pl. ABCD)" maxlength="4" style="text-transform: uppercase;">
+            </div>
+            <button onclick="joinRoom()">Csatlakozás Játékhoz</button>
+        </div>
+
+        <!-- 2. Képernyő: Váróterem (Lobby) -->
+        <div id="screen-lobby" class="hidden">
+            <h3 style="margin-top:0;">Szobakód:</h3>
+            <div id="roomCodeDisplay">ABCD</div>
+            
+            <button id="btnHider" class="role-btn" onclick="selectRole('hider')">
+                <span>🏃 Bújó leszek</span>
+                <span class="role-count" id="countHider">0/3</span>
+            </button>
+            <button id="btnSeeker" class="role-btn" onclick="selectRole('seeker')">
+                <span>🕵️ Hunyó leszek</span>
+                <span class="role-count" id="countSeeker">0/3</span>
+            </button>
+            
+            <div class="player-list" id="playerList">
+                <!-- Játékosok ide jönnek -->
+            </div>
+            
+            <button id="btnStartGame" class="primary hidden" onclick="startGame()">▶ Játék Indítása</button>
+            <p id="waitingMsg" style="color:#888; font-size:0.9em;">Várakozás a játékmesterre...</p>
         </div>
     </div>
 
     <div class="footer">
-        v1.2 - Mobile Optimized
+        v2.0 - Multiplayer Firebase Edition
     </div>
     <script src="toast.js"></script>
-</body>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    
+    <!-- Lobby Logic -->
+    <script>
+        const MAX_PER_ROLE = 3;
+        let myRoomId = null;
+        let myUserId = localStorage.getItem('local_userId');
+        if (!myUserId) {
+            myUserId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('local_userId', myUserId);
+        }
+        
+        let isHost = false;
+        let roomRef = null;
 
+        function showScreen(id) {
+            document.getElementById('screen-join').classList.add('hidden');
+            document.getElementById('screen-lobby').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function createRoom() {
+            const name = document.getElementById('playerName').value.trim();
+            if (!name) return Toast.show("Kérlek írd be a neved!");
+            
+            localStorage.setItem('local_playerName', name);
+            
+            // Random 4 betűs kód generálása
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            myRoomId = '';
+            for (let i = 0; i < 4; i++) {
+                myRoomId += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            
+            isHost = true;
+            document.getElementById('btnStartGame').classList.remove('hidden');
+            document.getElementById('waitingMsg').classList.add('hidden');
+            
+            enterLobby(myRoomId, name);
+        }
+
+        async function joinRoom() {
+            const name = document.getElementById('playerName').value.trim();
+            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            
+            if (!name) return Toast.show("Kérlek írd be a neved!");
+            if (!code || code.length !== 4) return Toast.show("Érvénytelen szobakód!");
+            
+            // Check if room exists
+            try {
+                const snapshot = await db.ref('rooms/' + code).once('value');
+                if (!snapshot.exists()) {
+                    return Toast.show("Ez a szoba nem létezik!");
+                }
+            } catch (e) {
+                console.error(e);
+                return Toast.show("Hiba történt a csatlakozáskor!");
+            }
+            
+            localStorage.setItem('local_playerName', name);
+            myRoomId = code;
+            isHost = false;
+            
+            enterLobby(myRoomId, name);
+        }
+
+        function enterLobby(roomId, name) {
+            localStorage.setItem('local_roomId', roomId);
+            document.getElementById('roomCodeDisplay').innerText = roomId;
+            showScreen('screen-lobby');
+            
+            roomRef = db.ref('rooms/' + roomId);
+            
+            // Csatlakozás tényének beírása
+            roomRef.child('players/' + myUserId).set({
+                name: name,
+                role: 'none',
+                isHost: isHost
+            });
+            
+            // Ha lecsatlakozik, törölje magát
+            roomRef.child('players/' + myUserId).onDisconnect().remove();
+            
+            // Figyeljük a szoba változásait
+            roomRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                
+                updateLobbyUI(data.players || {});
+                
+                // Ha a játék elindult
+                if (data.status === 'playing') {
+                    const myPlayer = data.players[myUserId];
+                    if (myPlayer && myPlayer.role === 'hider') {
+                        window.location.href = './deck.html';
+                    } else if (myPlayer && myPlayer.role === 'seeker') {
+                        window.location.href = './hunyo.html';
+                    } else {
+                        Toast.show("Nem választottál szerepet, nem tudsz csatlakozni a játékhoz!");
+                    }
+                }
+            });
+        }
+
+        function updateLobbyUI(players) {
+            let hiderCount = 0;
+            let seekerCount = 0;
+            const listEl = document.getElementById('playerList');
+            listEl.innerHTML = '';
+            
+            Object.values(players).forEach(p => {
+                if (p.role === 'hider') hiderCount++;
+                if (p.role === 'seeker') seekerCount++;
+                
+                let roleIcon = "👀 Nincs szerepe";
+                let roleClass = "";
+                if (p.role === 'hider') { roleIcon = "🏃 Bújó"; roleClass = "player-hider"; }
+                if (p.role === 'seeker') { roleIcon = "🕵️ Hunyó"; roleClass = "player-seeker"; }
+                
+                listEl.innerHTML += `<div class="player-item ${roleClass}">
+                    <strong>${p.name}</strong> ${p.isHost ? '(Host)' : ''} - ${roleIcon}
+                </div>`;
+            });
+            
+            document.getElementById('countHider').innerText = `${hiderCount}/${MAX_PER_ROLE}`;
+            document.getElementById('countSeeker').innerText = `${seekerCount}/${MAX_PER_ROLE}`;
+            
+            const btnHider = document.getElementById('btnHider');
+            const btnSeeker = document.getElementById('btnSeeker');
+            
+            const myPlayer = players[myUserId];
+            
+            if (myPlayer && myPlayer.role === 'hider') {
+                btnHider.style.border = "2px solid #4CAF50";
+                btnSeeker.style.border = "1px solid #333";
+            } else if (myPlayer && myPlayer.role === 'seeker') {
+                btnSeeker.style.border = "2px solid #2196F3";
+                btnHider.style.border = "1px solid #333";
+            } else {
+                btnHider.style.border = "1px solid #333";
+                btnSeeker.style.border = "1px solid #333";
+            }
+            
+            // Limit disable
+            btnHider.disabled = (hiderCount >= MAX_PER_ROLE && (!myPlayer || myPlayer.role !== 'hider'));
+            btnSeeker.disabled = (seekerCount >= MAX_PER_ROLE && (!myPlayer || myPlayer.role !== 'seeker'));
+        }
+
+        function selectRole(role) {
+            if (roomRef) {
+                roomRef.child('players/' + myUserId + '/role').set(role);
+                localStorage.setItem('local_role', role);
+            }
+        }
+
+        function startGame() {
+            if (roomRef && isHost) {
+                roomRef.child('status').set('playing');
+            }
+        }
+        
+        // Auto-fill from localStorage
+        const savedName = localStorage.getItem('local_playerName');
+        if (savedName) document.getElementById('playerName').value = savedName;
+    </script>
+</body>
 </html>

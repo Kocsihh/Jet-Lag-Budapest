@@ -4,10 +4,29 @@
 // =============================================================================
 
 // --- ÁLLAPOT ---
-let currentDeck    = Storage.get('jetLag_deck', [...ORIGINAL_DECK]);
-let inventory      = Storage.get('jetLag_inventory', []);
-let drawnPool      = Storage.get('jetLag_drawnPool', []);
-let activeEffects  = Storage.get('jetLag_activeEffects', []);
+let currentDeck = [];
+let inventory = [];
+let drawnPool = [];
+let activeEffects = [];
+
+async function initFirebaseDeck() {
+    const roomId = localStorage.getItem('local_roomId');
+    if (!roomId) {
+        window.location.href = './index.html';
+        return;
+    }
+    
+    await Storage.init(roomId, () => {
+        currentDeck    = Storage.get('jetLag_deck', [...ORIGINAL_DECK]);
+        inventory      = Storage.get('jetLag_inventory', []);
+        drawnPool      = Storage.get('jetLag_drawnPool', []);
+        activeEffects  = Storage.get('jetLag_activeEffects', []);
+        
+        // Refresh UI
+        initDeck();
+    });
+}
+window.addEventListener('load', initFirebaseDeck);
 
 // Fizetési folyamat állapota
 let isPaying          = false;
@@ -31,10 +50,12 @@ function setDrawButtons(disabled) {
 // --- PERZISZTENCIA ---
 
 function saveDeckState() {
-    Storage.set('jetLag_deck', currentDeck);
-    Storage.set('jetLag_inventory', inventory);
-    Storage.set('jetLag_drawnPool', drawnPool);
-    Storage.set('jetLag_activeEffects', activeEffects);
+    Storage.update({
+        'jetLag_deck': currentDeck,
+        'jetLag_inventory': inventory,
+        'jetLag_drawnPool': drawnPool,
+        'jetLag_activeEffects': activeEffects
+    });
 }
 
 // --- PAKLI MŰVELETEK ---
@@ -312,6 +333,8 @@ function updateStatus(msg) {
     bar.style.display = msg ? 'block' : 'none';
 }
 
+let timerInterval = null;
+
 // Inicializálás
 function initDeck() {
     renderInventory();
@@ -324,7 +347,11 @@ function initDeck() {
     if (drawnPool.length > 0) {
         renderDrawnPool();
         setDrawButtons(true);
+    } else {
+        document.getElementById('selection-area').innerHTML = '';
     }
 
-    setInterval(updateActiveTimers, 1000);
+    if (!timerInterval) {
+        timerInterval = setInterval(updateActiveTimers, 1000);
+    }
 }

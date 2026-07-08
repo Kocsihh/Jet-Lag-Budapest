@@ -1,9 +1,34 @@
 let countdown;
 let lastAction = null;
-let gameActive = Storage.get('jetLag_gameActive', false);
-let exhaustedQuestions = Storage.get('jetLag_exhausted', []);
-let vetoedQuestions = Storage.get('jetLag_vetoed', {});
-let logEntries = Storage.get('jetLag_log', []);
+let gameActive = false;
+let exhaustedQuestions = [];
+let vetoedQuestions = {};
+let logEntries = [];
+
+async function initFirebaseHunyo() {
+    const roomId = localStorage.getItem('local_roomId');
+    if (!roomId) {
+        window.location.href = './index.html';
+        return;
+    }
+    
+    await Storage.init(roomId, () => {
+        gameActive = Storage.get('jetLag_gameActive', false);
+        exhaustedQuestions = Storage.get('jetLag_exhausted', []);
+        vetoedQuestions = Storage.get('jetLag_vetoed', {});
+        logEntries = Storage.get('jetLag_log', []);
+        
+        initHunyo();
+        if (typeof initMap === 'function') initMap();
+    });
+    
+    // Restore last active tab
+    if (typeof switchHunyoTab === 'function') {
+        const lastTab = Storage.get('local_hunyoTab', 'questions'); // using local for tab state
+        switchHunyoTab(lastTab);
+    }
+}
+window.addEventListener('load', initFirebaseHunyo);
 
 async function startGame() {
     if (await customConfirm("Készen állsz az indulásra?<br>A kérdések el fognak fogyni a játék során!", "Indítás", "Mégsem")) {
@@ -28,11 +53,13 @@ async function endGame() {
 }
 
 function saveState() {
-    Storage.set('jetLag_gameActive', gameActive);
-    Storage.set('jetLag_exhausted', exhaustedQuestions);
-    Storage.set('jetLag_vetoed', vetoedQuestions);
-    Storage.set('jetLag_lastAction', lastAction);
-    Storage.set('jetLag_log', logEntries);
+    Storage.update({
+        'jetLag_gameActive': gameActive,
+        'jetLag_exhausted': exhaustedQuestions,
+        'jetLag_vetoed': vetoedQuestions,
+        'jetLag_lastAction': lastAction,
+        'jetLag_log': logEntries
+    });
 }
 
 function updateUI() {

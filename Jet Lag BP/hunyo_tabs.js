@@ -13,7 +13,7 @@ function switchHunyoTab(tabId) {
     document.getElementById(`tab-btn-${tabId}`).classList.add('active');
 
     // 3. Save current tab to storage so it persists across refreshes
-    Storage.set('jetLag_hunyoTab', tabId);
+    Storage.set('local_hunyoTab', tabId);
 
     // 4. Special logic for Google Maps when it becomes visible
     if (tabId === 'map') {
@@ -28,19 +28,3 @@ function switchHunyoTab(tabId) {
     }
 }
 
-// Inicializálás az oldal betöltésekor
-window.addEventListener('load', () => {
-    // Init Hunyo logic
-    if (typeof initHunyo === 'function') {
-        initHunyo();
-    }
-
-    // Init Map logic
-    if (typeof initMap === 'function') {
-        initMap();
-    }
-
-    // Restore last active tab
-    const lastTab = Storage.get('jetLag_hunyoTab', 'questions');
-    switchHunyoTab(lastTab);
-});
