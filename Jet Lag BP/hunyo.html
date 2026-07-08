@@ -47,6 +47,15 @@
                 Befejezés</button>
         </div>
 
+        <!-- STOPWATCH + ELKAPTUK -->
+        <div class="game-status-bar">
+            <div class="stopwatch-wrap">
+                <div class="stopwatch-label">Játékidő</div>
+                <div id="stopwatch-display" class="stopwatch-display">00:00</div>
+            </div>
+            <button class="btn-caught" onclick="caughtHider()">🛑 ELKAPTUK!</button>
+        </div>
+
         <div id="timer-container">
             <div class="timer-msg" id="timer-label">Várakozás...</div>
             <div id="timer-display">00:00</div>
@@ -194,7 +203,7 @@
             <button class="btn-thermo" onclick="startThermometer(5000)">Hő 5km</button>
 
             <!-- Új Funkció -->
-            <button class="btn-hiders" onclick="togglePossibleHiders()">Megállók (500m)</button>
+            <button class="btn-hiders off" id="hidersBtn" onclick="togglePossibleHiders()">Megállók (500m): KI</button>
             <button class="btn-swap" id="swapBtn" onclick="swapColors()">Színcsere</button>
             <button class="btn-location off" id="myLocationBtn" onclick="toggleMyLocation()">📍 Helyzetem</button>
             <button class="btn-reset-map" onclick="clearAll()">Törlés</button>
@@ -233,10 +242,19 @@
     <script src="storage.js"></script>
     <script src="toast.js"></script>
     <script src="dialog.js"></script>
-    <script src="hunyo.js"></script>
     <script src="map_data.js"></script>
     <script src="map.js"></script>
+    <script src="hunyo.js"></script>
     <script src="hunyo_tabs.js"></script>
+
+    <!-- ELKAPTUK MODAL -->
+    <div id="caught-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
+        <div class="caught-modal-inner">
+            <div id="caught-body"></div>
+            <button class="caught-close-btn" onclick="closeCaughtModal()">Bezárás</button>
+        </div>
+    </div>
+
 </body>
 
 </html>

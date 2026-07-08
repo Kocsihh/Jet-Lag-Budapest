@@ -1,9 +1,14 @@
 let countdown;
-let lastAction = null;
+lastAction = null;
 let gameActive = false;
 let exhaustedQuestions = [];
 let vetoedQuestions = {};
 let logEntries = [];
+
+// ---- STOPWATCH (felül számol) ----
+let stopwatchInterval = null;
+let stopwatchStartTime = null; // Unix timestamp (ms) mikor indult
+let stopwatchElapsed = 0;      // Eddig eltelt másodpercek (együtttes)
 
 async function initFirebaseHunyo() {
     const roomId = localStorage.getItem('local_roomId');
@@ -38,6 +43,7 @@ async function startGame() {
         saveState();
         updateUI();
         addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), "--- JÁTÉK ELKEZDŐDÖTT ---");
+        startStopwatch();
     }
 }
 
@@ -49,7 +55,131 @@ async function endGame() {
         saveState();
         updateUI();
         addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), "--- JÁTÉK VÉGET ÉRT ---");
+        stopStopwatch();
     }
+}
+
+// ========== STOPWATCH ==========
+
+function startStopwatch() {
+    stopwatchElapsed = Storage.get('jetLag_swElapsed', 0);
+    stopwatchStartTime = Date.now();
+    Storage.set('jetLag_swStart', stopwatchStartTime);
+    renderStopwatch();
+    stopwatchInterval = setInterval(renderStopwatch, 1000);
+}
+
+function stopStopwatch() {
+    if (stopwatchInterval) {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = null;
+    }
+    // Mentük az eltelt másodperceket
+    if (stopwatchStartTime) {
+        stopwatchElapsed += Math.floor((Date.now() - stopwatchStartTime) / 1000);
+        Storage.set('jetLag_swElapsed', stopwatchElapsed);
+        stopwatchStartTime = null;
+        Storage.remove('jetLag_swStart');
+    }
+}
+
+function getCurrentElapsed() {
+    if (stopwatchStartTime) {
+        return stopwatchElapsed + Math.floor((Date.now() - stopwatchStartTime) / 1000);
+    }
+    return stopwatchElapsed;
+}
+
+function renderStopwatch() {
+    const el = document.getElementById('stopwatch-display');
+    if (!el) return;
+    const total = getCurrentElapsed();
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (h > 0) {
+        el.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    } else {
+        el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+}
+
+// ========== ELKAPTUK! ==========
+
+async function caughtHider() {
+    if (!await customConfirm("Biztosan elkaptátok a bújót? 🎉", "IGEN, ELKAPTUK!", "Mégsem")) return;
+
+    stopStopwatch();
+    const elapsedSec = getCurrentElapsed();
+
+    // Öszes idő-kártya kihuzva a pakliból (Firebase-ből olvassuk)
+    const roomId = localStorage.getItem('local_roomId');
+    let totalBonusSec = 0;
+    let bonusCards = [];
+
+    // Csak az inventoryban lévő Idő-kártyák számítanak (a feladott/eldobott NEM)
+    const snap = await db.ref(`rooms/${roomId}/gameState`).once('value');
+    const gs = snap.val() || {};
+    const inventory = gs.jetLag_inventory || [];
+
+    inventory.forEach(card => {
+        if (card.tipus === 'Idő') {
+            const matchMin = card.nev.match(/\+(\d+)p/);
+            const matchPct = card.nev.match(/\+(\d+)%/);
+            if (matchMin) {
+                const mins = parseInt(matchMin[1]);
+                totalBonusSec += mins * 60;
+                bonusCards.push(`${card.nev} (+${mins}p)`);
+            } else if (matchPct) {
+                bonusCards.push(`${card.nev} (${matchPct[1]}%)`);
+            }
+        }
+    });
+
+    // Százalékos kártyák utólagos alkalmazása
+    inventory.forEach(card => {
+        const matchPct = card.nev.match(/Idő \+(\d+)%/);
+        if (matchPct) {
+            const pct = parseInt(matchPct[1]);
+            totalBonusSec += Math.round(totalBonusSec * pct / 100);
+        }
+    });
+
+    const finalSec = elapsedSec + totalBonusSec;
+
+    function fmtTime(sec) {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        if (h > 0) return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+
+    const bonusText = bonusCards.length > 0
+        ? `<div class="caught-bonus"><b>Idő-bónuszok:</b><br>${bonusCards.map(c => `• ${c}`).join('<br>')}<br><b>+${fmtTime(totalBonusSec)} bónusz</b></div>`
+        : '<div class="caught-bonus">Nem volt idő-kártya huzva.</div>';
+
+    const html = `
+        <div class="caught-result">
+            <div class="caught-trophy">🏆</div>
+            <div class="caught-title">ELKAPTUK!</div>
+            <div class="caught-time-label">Eltérben töltött idő:</div>
+            <div class="caught-time">${fmtTime(elapsedSec)}</div>
+            ${bonusText}
+            <div class="caught-time-label" style="margin-top:12px">Végző idő:</div>
+            <div class="caught-time final">${fmtTime(finalSec)}</div>
+        </div>
+    `;
+
+    document.getElementById('caught-body').innerHTML = html;
+    document.getElementById('caught-modal').style.display = 'flex';
+
+    addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), `--- ELKAPTUK! Végző idő: ${fmtTime(finalSec)} ---`);
+    saveState();
+}
+
+function closeCaughtModal() {
+    document.getElementById('caught-modal').style.display = 'none';
 }
 
 function saveState() {
@@ -294,6 +424,17 @@ function initHunyo() {
     lastAction = Storage.get('jetLag_lastAction', null);
     updateUI();
     renderLog();
+
+    // Stopwatch visszaállítása
+    stopwatchElapsed = Storage.get('jetLag_swElapsed', 0);
+    const swStart = Storage.get('jetLag_swStart', null);
+    if (swStart && gameActive) {
+        stopwatchStartTime = swStart;
+        stopwatchInterval = setInterval(renderStopwatch, 1000);
+        renderStopwatch();
+    } else if (stopwatchElapsed > 0) {
+        renderStopwatch();
+    }
 
     // Restart timer visually if it's currently running
     const endTime = Storage.get('jetLag_timerEnd', null);

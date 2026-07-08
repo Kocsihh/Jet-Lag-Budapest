@@ -118,10 +118,13 @@ async function loadDistrictData() {
 
 // --- ÚJ FUNKCIÓ: POSSIBLE HIDER LOCATIONS ---
 function togglePossibleHiders() {
+    const btn = document.getElementById('hidersBtn');
     if (hidersVisible) {
         clearHiders();
+        if (btn) { btn.innerText = "Megállók (500m): KI"; btn.classList.add('off'); }
     } else {
         drawHiders();
+        if (btn) { btn.innerText = "Megállók (500m): BE"; btn.classList.remove('off'); }
     }
 }
 
@@ -638,12 +641,24 @@ function initLocationListener() {
         }
         
         // Add/Update markers
+        const myRole = localStorage.getItem('local_role');
         for (let uid in locations) {
             if (uid === myUserId) continue; // Saját magunkat a kék pötty mutatja
             
             const data = locations[uid];
             const latLng = { lat: data.lat, lng: data.lng };
             const isHider = data.role === 'hider';
+
+            // Ha én Hunyó vagyok, a Bújókat NEM látom
+            if (myRole === 'seeker' && isHider) {
+                // Ha volt korábban markere, töröljük
+                if (playerMarkers[uid]) {
+                    playerMarkers[uid].marker.setMap(null);
+                    playerMarkers[uid].circle.setMap(null);
+                    delete playerMarkers[uid];
+                }
+                continue;
+            }
             
             const color = isHider ? '#4CAF50' : '#ff4500';
             
