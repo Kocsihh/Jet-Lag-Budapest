@@ -256,10 +256,15 @@ function updateUI() {
     document.getElementById('btn-start-game').style.display = gameActive ? 'none' : 'block';
     document.getElementById('btn-end-game').style.display = gameActive ? 'block' : 'none';
 
+    // Ellenőrizzük van-e aktív kérdés várakozóban
+    const hasPendingQuestion = !!Storage.get('jetLag_pendingQuestion', null);
+
     // Question buttons exhaustion & veto info
     const buttons = document.querySelectorAll('.q-btn');
     buttons.forEach(btn => {
         const onClickAttr = btn.getAttribute('onclick');
+        if (!onClickAttr) return;
+        
         const qMatch = onClickAttr.match(/askQuestion\('([^']+)',\s*(\d+)/);
         if (qMatch) {
             const qName = qMatch[1];
@@ -269,8 +274,10 @@ function updateUI() {
 
             if (exhaustedQuestions.includes(qName)) {
                 btn.classList.add('exhausted');
+                btn.disabled = true;
             } else {
                 btn.classList.remove('exhausted');
+                btn.disabled = hasPendingQuestion;
             }
 
             const rewardSpan = btn.querySelector('.reward-info');
@@ -289,6 +296,10 @@ function updateUI() {
 
 function askQuestion(qName, baseMinutes, isPhoto = false, reward = "") {
     if (exhaustedQuestions.includes(qName)) return;
+    if (Storage.get('jetLag_pendingQuestion', null)) {
+        showToast("Már van egy aktív kérdés! Várd meg a bújók válaszát.", "warning", 3000);
+        return;
+    }
 
     const vCount = vetoedQuestions[qName] || 0;
     const actualMinutes = baseMinutes * Math.pow(2, vCount);

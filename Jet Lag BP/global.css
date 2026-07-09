@@ -1489,11 +1489,21 @@ button:disabled {
 }
 
 .q-outcome-btn.disabled,
-.q-outcome-btn:disabled {
+.q-outcome.q-btn.exhausted {
     opacity: 0.35;
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
+}
+
+.q-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
 }
 
 /* =============================================================================
