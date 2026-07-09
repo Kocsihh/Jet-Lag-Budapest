@@ -16,11 +16,16 @@ let hiderCirclesMetro = [];
 let hiderCirclesTram = [];
 let hidersVisible = false;
 let activeHighlightPolygon = null;
+let activeHighlightMarker = null;
 
 function clearPlayableAreaHighlight() {
     if (activeHighlightPolygon) {
         activeHighlightPolygon.setMap(null);
         activeHighlightPolygon = null;
+    }
+    if (activeHighlightMarker) {
+        activeHighlightMarker.setMap(null);
+        activeHighlightMarker = null;
     }
 }
 
@@ -84,7 +89,7 @@ function initMap() {
     });
 
     const myRole = localStorage.getItem('local_role');
-    
+
     if (myRole !== 'hider') {
         seekerMarker = new google.maps.Marker({
             position: bpCenter,
@@ -171,11 +176,11 @@ function drawHiders() {
         const stopPoints = hasNamedStops
             ? line.commonPath.filter(pt => pt.name)
             : line.commonPath;
-            
+
         let tramPoints = [...stopPoints];
         if (line.branch4) tramPoints.push(...line.branch4);
         if (line.branch6) tramPoints.push(...line.branch6);
-        
+
         tramPoints.forEach(pt => {
             const circle = new google.maps.Circle({
                 center: pt,
@@ -198,12 +203,12 @@ function drawHiders() {
 
 function highlightPlayableArea(clickedPt) {
     clearPlayableAreaHighlight();
-    
+
     if (typeof turf === 'undefined') {
         console.error("Turf.js nincs betöltve!");
         return;
     }
-    
+
     // 1. Összegyűjtjük a nyers aktív megállókat
     const rawStops = [];
     METRO_DATA.forEach(line => {
@@ -217,22 +222,22 @@ function highlightPlayableArea(clickedPt) {
             let tramPoints = [...stopPoints];
             if (line.branch4) tramPoints.push(...line.branch4);
             if (line.branch6) tramPoints.push(...line.branch6);
-            
+
             tramPoints.forEach(pt => { rawStops.push({ lat: pt.lat, lng: pt.lng }); });
         });
     }
 
-    // 1.5. Intelligens Csoportosítás (Clustering) 150 méteren belül
+    // 1.5. Intelligens Csoportosítás (Clustering) 200 méteren belül
     const clusters = [];
     rawStops.forEach(stop => {
         let foundCluster = false;
         for (let cluster of clusters) {
             const dist = turf.distance(
-                turf.point([stop.lng, stop.lat]), 
-                turf.point([cluster.center.lng, cluster.center.lat]), 
+                turf.point([stop.lng, stop.lat]),
+                turf.point([cluster.center.lng, cluster.center.lat]),
                 { units: 'kilometers' }
             );
-            if (dist <= 0.30) { // 300 méter sugarú vonzáskörzet (Budapest sűrűségénél biztonságos)
+            if (dist <= 0.2) { // 200 méter sugarú vonzáskörzet (Budapest sűrűségénél biztonságos)
                 cluster.points.push(stop);
                 foundCluster = true;
                 break;
@@ -247,23 +252,23 @@ function highlightPlayableArea(clickedPt) {
     const points = turf.featureCollection(clusters.map(c => turf.point([c.center.lng, c.center.lat])));
     const bbox = [18.9, 47.3, 19.3, 47.7]; // Budapest bbox
     const voronoiPolygons = turf.voronoi(points, { bbox: bbox });
-    
+
     // 3. Megkeressük a kattintott ponthoz tartozó klaszter Voronoi poligonját
-    const clickedClusterIndex = clusters.findIndex(c => 
+    const clickedClusterIndex = clusters.findIndex(c =>
         c.points.some(p => p.lat === clickedPt.lat && p.lng === clickedPt.lng)
     );
     if (clickedClusterIndex === -1) return;
-    
+
     const voronoiPoly = voronoiPolygons.features[clickedClusterIndex];
-    if (!voronoiPoly) return; 
-    
+    if (!voronoiPoly) return;
+
     // 4. Létrehozunk egy 500m-es Turf kört
     const circle500m = turf.circle([clickedPt.lng, clickedPt.lat], 0.5, { steps: 64, units: 'kilometers' });
-    
+
     // 5. Vesszük a kettő metszetét
     const intersection = turf.intersect(voronoiPoly, circle500m);
     if (!intersection) return;
-    
+
     // 6. Felrajzoljuk a Google Maps-re
     const geom = intersection.geometry;
     let paths = [];
@@ -272,7 +277,7 @@ function highlightPlayableArea(clickedPt) {
     } else if (geom.type === 'MultiPolygon') {
         paths = geom.coordinates.map(polygon => polygon[0].map(coord => ({ lat: coord[1], lng: coord[0] })));
     }
-    
+
     activeHighlightPolygon = new google.maps.Polygon({
         paths: paths,
         strokeColor: "#FF9800",
@@ -282,6 +287,21 @@ function highlightPlayableArea(clickedPt) {
         fillOpacity: 0.4,
         map: map,
         zIndex: 500
+    });
+
+    // Kirajzolunk egy jelzőkarikát a terület pontos közepére (a megállóra)
+    activeHighlightMarker = new google.maps.Marker({
+        position: clickedPt,
+        map: map,
+        icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: "#FFFFFF",
+            fillOpacity: 1,
+            strokeColor: "#FF9800",
+            strokeWeight: 3,
+        },
+        zIndex: 501
     });
 }
 
@@ -546,12 +566,12 @@ function toggleTrams() {
     clearPlayableAreaHighlight();
     tramsVisible = !tramsVisible;
     tramLines.forEach(line => line.setMap(tramsVisible ? map : null));
-    
+
     // Frissítjük a megállók körvonalait is
     if (hidersVisible) {
         hiderCirclesTram.forEach(c => c.setMap(tramsVisible ? map : null));
     }
-    
+
     document.getElementById('tramBtn').innerText = tramsVisible ? "Villamosok: BE" : "Villamosok: KI";
     document.getElementById('tramBtn').classList.toggle('off', !tramsVisible);
 }
@@ -676,7 +696,7 @@ function stopMyLocation() {
     myLocationTracking = false;
     const btn = document.getElementById('myLocationBtn');
     if (btn) { btn.innerText = '📍 Helyzetem'; btn.classList.add('off'); }
-    
+
     // Törlés Firebase-ből
     const roomId = localStorage.getItem('local_roomId');
     const myUserId = localStorage.getItem('local_userId');
@@ -688,13 +708,13 @@ function stopMyLocation() {
 function placeMyLocationMarker(pos) {
     const latLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     const accuracy = pos.coords.accuracy;
-    
+
     // Firebase küldés
     const roomId = localStorage.getItem('local_roomId');
     const myUserId = localStorage.getItem('local_userId');
     const myName = localStorage.getItem('local_playerName');
     const myRole = localStorage.getItem('local_role');
-    
+
     if (roomId && myUserId && typeof db !== 'undefined') {
         const locRef = db.ref(`rooms/${roomId}/locations/${myUserId}`);
         locRef.onDisconnect().remove();
@@ -752,10 +772,10 @@ function initLocationListener() {
     const roomId = localStorage.getItem('local_roomId');
     const myUserId = localStorage.getItem('local_userId');
     if (!roomId || typeof db === 'undefined') return;
-    
+
     db.ref(`rooms/${roomId}/locations`).on('value', (snapshot) => {
         const locations = snapshot.val() || {};
-        
+
         // Remove markers for players no longer in locations
         for (let uid in playerMarkers) {
             if (!locations[uid]) {
@@ -764,12 +784,12 @@ function initLocationListener() {
                 delete playerMarkers[uid];
             }
         }
-        
+
         // Add/Update markers
         const myRole = localStorage.getItem('local_role');
         for (let uid in locations) {
             if (uid === myUserId) continue; // Saját magunkat a kék pötty mutatja
-            
+
             const data = locations[uid];
             const latLng = { lat: data.lat, lng: data.lng };
             const isHider = data.role === 'hider';
@@ -784,9 +804,9 @@ function initLocationListener() {
                 }
                 continue;
             }
-            
+
             const color = isHider ? '#4CAF50' : '#ff4500';
-            
+
             if (!playerMarkers[uid]) {
                 const marker = new google.maps.Marker({
                     position: latLng,
@@ -802,7 +822,7 @@ function initLocationListener() {
                     },
                     label: { text: data.name, color: 'white', fontSize: '14px', fontWeight: 'bold' }
                 });
-                
+
                 const circle = new google.maps.Circle({
                     center: latLng,
                     radius: data.accuracy || 50,
@@ -815,7 +835,7 @@ function initLocationListener() {
                     clickable: false,
                     zIndex: 1989
                 });
-                
+
                 playerMarkers[uid] = { marker, circle };
             } else {
                 playerMarkers[uid].marker.setPosition(latLng);

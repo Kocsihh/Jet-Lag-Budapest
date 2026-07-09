@@ -4,10 +4,74 @@
 // =============================================================================
 
 const METRO_DATA = [
-    { name: "M1", color: "#ffcd00", path: [{ lat: 47.4967, lng: 19.0503 }, { lat: 47.49791, lng: 19.05396 }, { lat: 47.50049, lng: 19.05730 }, { lat: 47.5024, lng: 19.0594 }, { lat: 47.5042, lng: 19.0617 }, { lat: 47.5065, lng: 19.0645 }, { lat: 47.5085, lng: 19.0671 }, { lat: 47.5106, lng: 19.0700 }, { lat: 47.5147, lng: 19.0775 }, { lat: 47.51720, lng: 19.08080 }, { lat: 47.5194, lng: 19.0911 }] },
-    { name: "M2", color: "#e41f18", path: [{ lat: 47.5003, lng: 19.0245 }, { lat: 47.5066, lng: 19.0253 }, { lat: 47.506389, lng: 19.038889 }, { lat: 47.50572, lng: 19.04498 }, { lat: 47.49766, lng: 19.05461 }, { lat: 47.4942, lng: 19.0601 }, { lat: 47.49716, lng: 19.07053 }, { lat: 47.50028, lng: 19.08167 }, { lat: 47.5000, lng: 19.1058 }, { lat: 47.501051, lng: 19.118839 }, { lat: 47.5028, lng: 19.1356 }] },
-    { name: "M3", color: "#005ca5", path: [{ lat: 47.56033, lng: 19.09065 }, { lat: 47.55913, lng: 19.07981 }, { lat: 47.54871, lng: 19.07323 }, { lat: 47.5393922, lng: 19.0695 }, { lat: 47.53034, lng: 19.06583 }, { lat: 47.5225, lng: 19.0617 }, { lat: 47.51824, lng: 19.06055 }, { lat: 47.51139, lng: 19.05667 }, { lat: 47.50056, lng: 19.05358 }, { lat: 47.49791, lng: 19.05444 }, { lat: 47.493056, lng: 19.056111 }, { lat: 47.48987, lng: 19.06133 }, { lat: 47.48572, lng: 19.06938 }, { lat: 47.48265, lng: 19.07913 }, { lat: 47.47917, lng: 19.08944 }, { lat: 47.475556, lng: 19.098611 }, { lat: 47.47097, lng: 19.11130 }, { lat: 47.468629, lng: 19.117178 }, { lat: 47.46470, lng: 19.12640 }, { lat: 47.46333, lng: 19.14917 }] },
-    { name: "M4", color: "#009540", path: [{ lat: 47.46499, lng: 19.022205 }, { lat: 47.46504, lng: 19.03291 }, { lat: 47.4741667, lng: 19.0458333 }, { lat: 47.477158, lng: 19.046778 }, { lat: 47.483934, lng: 19.053125 }, { lat: 47.487107, lng: 19.057481 }, { lat: 47.489644, lng: 19.061687 }, { lat: 47.492778, lng: 19.072222 }, { lat: 47.49580, lng: 19.07750 }, { lat: 47.50030, lng: 19.08172 }] }
+    {
+        name: "M1", color: "#ffcd00", path: [
+            { lat: 47.4967, lng: 19.0503, name: "Vörösmarty tér" },
+            { lat: 47.49791, lng: 19.05396, name: "Deák Ferenc tér" },
+            { lat: 47.50049, lng: 19.05730, name: "Bajcsy-Zsilinszky út" },
+            { lat: 47.5024, lng: 19.0594, name: "Opera" },
+            { lat: 47.5042, lng: 19.0617, name: "Oktogon" },
+            { lat: 47.5065, lng: 19.0645, name: "Vörösmarty utca" },
+            { lat: 47.5085, lng: 19.0671, name: "Kodály körönd" },
+            { lat: 47.5106, lng: 19.0700, name: "Bajza utca" },
+            { lat: 47.5147, lng: 19.0775, name: "Hősök tere" },
+            { lat: 47.51720, lng: 19.08080, name: "Széchenyi fürdő" },
+            { lat: 47.5194, lng: 19.0911, name: "Mexikói út" }
+        ]
+    },
+    {
+        name: "M2", color: "#e41f18", path: [
+            { lat: 47.5003, lng: 19.0245, name: "Déli pályaudvar" },
+            { lat: 47.5066, lng: 19.0253, name: "Széll Kálmán tér" },
+            { lat: 47.506389, lng: 19.038889, name: "Batthyány tér" },
+            { lat: 47.50572, lng: 19.04498, name: "Kossuth Lajos tér" },
+            { lat: 47.49766, lng: 19.05461, name: "Deák Ferenc tér" },
+            { lat: 47.4942, lng: 19.0601, name: "Astoria" },
+            { lat: 47.49716, lng: 19.07053, name: "Blaha Lujza tér" },
+            { lat: 47.50028, lng: 19.08167, name: "Keleti pályaudvar" },
+            { lat: 47.5000, lng: 19.1058, name: "Puskás Ferenc Stadion" },
+            { lat: 47.501051, lng: 19.118839, name: "Pillangó utca" },
+            { lat: 47.5028, lng: 19.1356, name: "Örs vezér tere" }
+        ]
+    },
+    {
+        name: "M3", color: "#005ca5", path: [
+            { lat: 47.56033, lng: 19.09065, name: "Újpest-központ" },
+            { lat: 47.55913, lng: 19.07981, name: "Újpest-városkapu" },
+            { lat: 47.54871, lng: 19.07323, name: "Gyöngyösi utca" },
+            { lat: 47.5393922, lng: 19.0695, name: "Forgách utca" },
+            { lat: 47.5329813, lng: 19.0661038, name: "Göncz Árpád városközpont" },
+            { lat: 47.5225, lng: 19.0617, name: "Dózsa György út" },
+            { lat: 47.51824, lng: 19.06055, name: "Lehel tér" },
+            { lat: 47.51139, lng: 19.05667, name: "Nyugati pályaudvar" },
+            { lat: 47.50056, lng: 19.05358, name: "Arany János utca" },
+            { lat: 47.49791, lng: 19.05444, name: "Deák Ferenc tér" },
+            { lat: 47.493056, lng: 19.056111, name: "Ferenciek tere" },
+            { lat: 47.48987, lng: 19.06133, name: "Kálvin tér" },
+            { lat: 47.48572, lng: 19.06938, name: "Corvin-negyed" },
+            { lat: 47.48265, lng: 19.07913, name: "Semmelweis Klinikák" },
+            { lat: 47.47917, lng: 19.08944, name: "Nagyvárad tér" },
+            { lat: 47.475556, lng: 19.098611, name: "Népliget" },
+            { lat: 47.47097, lng: 19.11130, name: "Ecseri út" },
+            { lat: 47.468629, lng: 19.117178, name: "Pöttyös utca" },
+            { lat: 47.46470, lng: 19.12640, name: "Határ út" },
+            { lat: 47.46333, lng: 19.14917, name: "Kőbánya-Kispest" }
+        ]
+    },
+    {
+        name: "M4", color: "#009540", path: [
+            { lat: 47.46499, lng: 19.022205, name: "Kelenföld vasútállomás" },
+            { lat: 47.46504, lng: 19.03291, name: "Bikás park" },
+            { lat: 47.4741667, lng: 19.0458333, name: "Újbuda-központ" },
+            { lat: 47.477158, lng: 19.046778, name: "Móricz Zsigmond körtér" },
+            { lat: 47.483934, lng: 19.053125, name: "Szent Gellért tér - Műegyetem" },
+            { lat: 47.487107, lng: 19.057481, name: "Fővám tér" },
+            { lat: 47.489644, lng: 19.061687, name: "Kálvin tér" },
+            { lat: 47.492778, lng: 19.072222, name: "Rákóczi tér" },
+            { lat: 47.49580, lng: 19.07750, name: "II. János Pál pápa tér" },
+            { lat: 47.50030, lng: 19.08172, name: "Keleti pályaudvar" }
+        ]
+    }
 ];
 
 const TRAM_DATA = [

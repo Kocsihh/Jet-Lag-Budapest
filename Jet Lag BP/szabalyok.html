@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jet Lag: Budapest - Játékszabályok</title>
+    <link rel="stylesheet" href="global.css">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .header-container {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(100, 255, 218, 0.4);
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        .rule-section {
+            background: var(--bg-card);
+            border: 1px solid rgba(100, 255, 218, 0.15);
+            border-radius: 16px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rule-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        h2 {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 span {
+            color: var(--accent);
+            background: rgba(100, 255, 218, 0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .back-btn-top {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--glass);
+            color: var(--accent);
+            text-decoration: none;
+            border-radius: 12px;
+            border: 1px solid var(--accent);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .back-btn-top:hover {
+            background: rgba(100, 255, 218, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.2);
+        }
+        
+        /* Kiemelt információkhoz */
+        .highlight-box {
+            background: rgba(255, 204, 0, 0.1);
+            border-left: 3px solid var(--warning);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+        .highlight-box p {
+            color: #fff;
+            margin: 0;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="./index.html" class="back-btn-top">⬅ Vissza a Főmenübe</a>
+
+    <div class="header-container">
+        <h1>Játékszabályok</h1>
+        <div class="subtitle">Jet Lag: Budapest - Hivatalos Útmutató</div>
+    </div>
+
+    <div class="rule-section">
+        <h2><span>1</span> Bevezetés és Az Első Kör</h2>
+        <p>Ez a <strong>Jet Lag: Budapest</strong> változata, saját paklival, inspirációt merítve a ZeneszerzőGeo csatornájáról vett videókból.</p>
+        
+        <h3>Az Első Kör</h3>
+        <p>A Bújók kiválasztják a saját megállójukat és odautaznak. Alapvetően a megálló <strong>500m-es sugarú körében</strong> lehet elbújni, azonban nem lehet másik megállóhoz közelebb lenni, mint ahova bújtál. Ehhez a térképen implementálva van matematikailag az adott megállónak az éles határai: <strong>Ez a térképen kattintással érhető el.</strong></p>
+        <p>Miután elfoglalták a helyüket a Bújók, a Hunyók is elindulnak. A Hunyók az 1. körben onnan kezdenek, ahonnan akarnak: akár otthonról, akár egy közlekedési csomópontból.</p>
+    </div>
+
+    <div class="rule-section">
+        <h2><span>2</span> A Játék Folyása: Kérdések</h2>
+        <p>A Hunyók kérdések segítségével próbálják kideríteni a Bújók pozícióját.</p>
+        
+        <div class="highlight-box">
+            <p><strong>1. fontos információ:</strong> A kérdések végén látható pl.: <strong>(2,1)</strong> az arra utal, hogy a Bújók hány kártyát húzhatnak és ebből mennyit tarthatnak meg. Pl.: (húzz 2-t ; tartsd meg 1-et). Értelemszerűen a nagyobb kérdések több kártyát fognak adni a Bújóknak.</p>
+        </div>
+
+        <p><strong>2. fontos információ: A Kategóriák:</strong></p>
+
+        <h3>1. kategória: Egyeztető kérdések</h3>
+        <p>Így működik: <em>Mi | x helyen vagyunk | ti is?</em><br>
+        <strong>Például:</strong> Mi Pesten vagyunk, ti is? Mi a X. kerületben vagyunk, ti is? Mi a 3-as villamos vonalán vagyunk, ti is?<br>
+        Értelemszerűen ha a bújó ott tartózkodik, igennel kell válaszolnia. Ahhoz, hogy ezeket a kérdéseket elsüsd, <strong>ott kell lenni</strong> az adott villamos vonalon. Fontos: A Kórház, mozi, mekinél nem kell bemenni az adott épületbe!</p>
+        
+        <h3>2. kategória: Mérő kérdések</h3>
+        <p>Itt nincsen előfeltétele a kérdezésnek, bármilyen részhalmazát az adott témáknak lehet választani. Tehát mondhatom az Egressy mekit, Az Uzsoki kórházt, vagy a bécsi Mekit is. A lényeg az, hogy így kell feltenni a kérdést: <em>"Hozzánk a Keleti Cinema city 1,2 km-re van. Hozzátok közelebb / távolabb?"</em></p>
+        
+        <h3>3. kategória: Radar kérdés</h3>
+        <p>A térképen a <strong>Hunyó Pint</strong> használva lehet megnézni a radar hatáskörét. Ha radart kérsz, akkor valamilyen pontos helyről kell indítanod és <strong>OTT IS KELL TARTÓZKODNOD</strong>, ahhoz hogy működjön a radar. Értelemszerűen a kérdés az, hogy: <em>"A Keleti Pályaudvar 500m-es sugarú körében benne vagytok?"</em></p>
+        
+        <h3>4. kategória: Hőmérő</h3>
+        <p>Segítő funkció a térképen található meg. A hőmérő így működik: Be kell írni a másik csapatnak, hogy <em>"Hőmérő: 2km-es hőmérő indul a keleti pályaudvartól."</em> A hőmérő átkokkal megszakítható, ekkor azonban nem húzhatnak a bújók (Átkokról lesz szó később). Majd miután az adott távot megtettük, beírjuk, hogy <em>"Hőmérő vége Örs Vezér Tere. Melegebb / Hidegebb?"</em> Ekkor küldjük el a kérdést és ilyenkor kell válaszolnia a Bújóknak.</p>
+
+        <h3>5. Fotó kérdések</h3>
+        <p>Értelemszerűek, azonban a részkérdésekhez pontosítás:</p>
+        <ul>
+            <li><strong>Legmagasabb épület:</strong> Amikor legmagasabb épületet kell lefotózni, akkor értendő az 500m-es rádiusz, tehát nem lehet lefotózni az Eiffel tornyot akkor sem ha jó kamerád van.</li>
+            <li><strong>Állomás fotó:</strong> Valahol az állomáson kell lőnöd fotót, nyilván ne fotózd le a táblát, de ne is egy lépcsőfokot. Itt jön be a szubjektivitás a játékba, hogy ne olyat küldj amiből egyből rájönnek, de ne olyat amiből még 1 megállót sem tudnak kizárni.</li>
+            <li><strong>Égbolt:</strong> LE KELL TENNI A TELEFONT A FÖLDRE, és úgy fotózni.</li>
+            <li><strong>Fa:</strong> Az egész fának benne kell lennie, minden ágával együtt, viszont lehet bármilyen fa.</li>
+            <li><strong>Szelfi:</strong> Valamilyen háttérnek szerepelni kell a szelfiben.</li>
+            <li><strong>A legszélesebb út:</strong> Elég ha az út van benne, érdemes megkeresni a valóban legszélesebb utat a megállótokban.</li>
+        </ul>
+    </div>
+
+    <div class="rule-section">
+        <h2><span>3</span> A Pakli és Bújók feladata</h2>
+        <p>Ahogy beszéltük, a Bújók tudnak húzni valamennyi kártyát minden kérdés után. Vannak különböző kártyafajták:</p>
+        <ul>
+            <li><strong>Időkártya:</strong> Egyszerű, a játékidőhöz hozzáadódik a kártyán szereplő idő, ezzel mesterségesen növelve a megtalálási időt.</li>
+            <li><strong>Vétó:</strong> A kérdést nem kell megválaszolni, de a Hunyók újra feltehetik, csak 2x-es időbüntetéssel.</li>
+            <li><strong>Szupervétó:</strong> A kérdést nem kell megválaszolni és a Hunyók nem tehetik fel újra a kérdést.</li>
+            <li><strong>Átok kártyák:</strong> Az átok kártyák legtöbb esetben úgy játszhatók ki, hogy egy másik kártyát feláldozol érte. A funkciójuk: A Hunyók lelassítása idegesítő dolgokkal :).</li>
+        </ul>
+    </div>
+
+    <div class="rule-section">
+        <h2><span>4</span> Endgame (Végjáték)</h2>
+        <p>Ha a Hunyók leszállnak abban a megállóban ahol a bújók bújnak, elkezdődik az endgame. Ekkor a bújók nem mozoghatnak. Ha olyan kérdést tesznek fel amit lehetetlen megválaszolni a mozgáskorlátozás miatt, akkor nyilván nem kell megválaszolni a kérdést. A játék addig tart, míg a hunyók meg nem találják a bújókat. Ekkor véget ér az első kör.</p>
+        
+        <h3>A második és a többi kör:</h3>
+        <p>Itt csak az változik, hogy <strong>az előző Bújóknak az állomásától kell indítani a keresést a Hunyóknak a következő körben</strong>. Az nyeri a játékot, akinek az összideje kevesebb a második kör után.</p>
+    </div>
+
+    <br><br>
+</body>
+</html>
