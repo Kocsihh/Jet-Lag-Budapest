@@ -1420,6 +1420,19 @@ button:disabled {
     border: 1px solid rgba(100, 255, 218, 0.25);
 }
 
+.question-card-reward {
+    display: block;
+    font-size: 1rem;
+    color: #fff;
+    background: rgba(189, 147, 249, 0.12);
+    border: 1px solid rgba(189, 147, 249, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    text-align: center;
+    letter-spacing: 0.3px;
+}
+
 .question-timer-wrap {
     text-align: center;
     margin: 20px 0 22px;

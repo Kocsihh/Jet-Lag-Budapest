@@ -300,7 +300,7 @@ function updateUI() {
     });
 }
 
-function askQuestion(qName, baseMinutes, isPhoto = false, reward = "") {
+function askQuestion(qName, baseMinutes, isPhoto = false, reward = "", drawCount = 0, keepCount = 0) {
     if (exhaustedQuestions.includes(qName)) return;
     if (Storage.get('jetLag_pendingQuestion', null)) {
         showToast("Már van egy aktív kérdés! Várd meg a bújók válaszát.", "warning", 3000);
@@ -310,16 +310,18 @@ function askQuestion(qName, baseMinutes, isPhoto = false, reward = "") {
     const vCount = vetoedQuestions[qName] || 0;
     const actualMinutes = baseMinutes * Math.pow(2, vCount);
 
-    // Firebase-re írjuk a feltétt kérdést, hogy a bújók is lássák
+    // Firebase-re írjuk a felteőtt kérdést, hogy a bújók is lássák
     Storage.set('jetLag_pendingQuestion', {
         qName,
         minutes: actualMinutes,
         isPhoto,
         vetoedCount: vCount,
-        startTime: Date.now()
+        startTime: Date.now(),
+        drawCount,
+        keepCount
     });
 
-    // Kiszámláló banner megmutatása
+    // Kiszsámláló banner megmutatása
     renderHunyoPendingBanner();
     showToast(`❓ Kérdés elküldve: "${qName}" – Várakozás a bújóktól...`, 'info', 4000);
 }
@@ -398,6 +400,29 @@ function startTimer(labelText, endTimeOverride = null) {
             // Don't alert if we're just loading a page where timer already expired
             if (!endTimeOverride || (endTimeOverride - now) > -2000) {
                 showToast("A várakozási idő lejárt! Új kérdést tehetsz fel.", 'success', 5000);
+                // Vibráció (mobilon)
+                if (navigator.vibrate) {
+                    navigator.vibrate([300, 100, 300, 100, 500]);
+                }
+                // Hangjelzés (Web Audio API - nem kell külső fájl)
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const playBeep = (freq, start, dur) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        gain.gain.setValueAtTime(0.4, ctx.currentTime + start);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+                        osc.start(ctx.currentTime + start);
+                        osc.stop(ctx.currentTime + start + dur);
+                    };
+                    playBeep(880, 0,    0.15);
+                    playBeep(880, 0.2,  0.15);
+                    playBeep(1100, 0.4, 0.3);
+                } catch(e) { /* hangjelzés nem elérhető */ }
             }
         }
     };

@@ -408,6 +408,10 @@ function renderPendingQuestion() {
             <div class="question-name">${pq.qName}</div>
             ${vetoLabel ? `<div class="question-vetoed-tag">🔄 ${vetoLabel}</div>` : ''}
             ${pq.isPhoto ? '<div class="question-photo-tag">📸 Fotó kérdés (10 perc)</div>' : ''}
+            ${(pq.drawCount > 0 || pq.keepCount > 0) ? `
+            <div class="question-card-reward">
+                🃏 Húzz <strong>${pq.drawCount}</strong> kártyát, tartsd meg a legjobb <strong>${pq.keepCount}</strong>-t
+            </div>` : ''}
             <div class="question-timer-wrap">
                 <div class="question-timer-label">Válaszolni kell</div>
                 <div class="question-timer" id="question-countdown">--:--</div>

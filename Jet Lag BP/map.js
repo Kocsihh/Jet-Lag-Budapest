@@ -17,6 +17,7 @@ let hiderCirclesTram = [];
 let hidersVisible = false;
 let activeHighlightPolygon = null;
 let activeHighlightMarker = null;
+let activeInfoWindow = null;
 
 function clearPlayableAreaHighlight() {
     if (activeHighlightPolygon) {
@@ -26,6 +27,10 @@ function clearPlayableAreaHighlight() {
     if (activeHighlightMarker) {
         activeHighlightMarker.setMap(null);
         activeHighlightMarker = null;
+    }
+    if (activeInfoWindow) {
+        activeInfoWindow.close();
+        activeInfoWindow = null;
     }
 }
 
@@ -167,6 +172,15 @@ function drawHiders() {
                 const msg = `Kattintott megálló: ${line.name} vonal, [${index}]. pont${ptName} -> lat: ${pt.lat}, lng: ${pt.lng}`;
                 console.log(msg, pt);
                 if (typeof showToast === 'function') showToast(msg, 'info', 3000);
+                // InfoWindow megállónévvel
+                if (pt.name) {
+                    if (activeInfoWindow) activeInfoWindow.close();
+                    activeInfoWindow = new google.maps.InfoWindow({
+                        content: `<div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;padding:2px 4px;">🚇 ${line.name} &mdash; ${pt.name}</div>`,
+                        position: pt
+                    });
+                    activeInfoWindow.open(map);
+                }
                 highlightPlayableArea(pt);
             });
             hiderCirclesMetro.push(circle);
@@ -197,6 +211,15 @@ function drawHiders() {
                 const msg = `Kattintott megálló: ${line.name} villamos, [${index}]. pont${ptName} -> lat: ${pt.lat}, lng: ${pt.lng}`;
                 console.log(msg, pt);
                 if (typeof showToast === 'function') showToast(msg, 'info', 3000);
+                // InfoWindow megállónévvel
+                if (pt.name) {
+                    if (activeInfoWindow) activeInfoWindow.close();
+                    activeInfoWindow = new google.maps.InfoWindow({
+                        content: `<div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;padding:2px 4px;">🚊 ${line.name} &mdash; ${pt.name}</div>`,
+                        position: pt
+                    });
+                    activeInfoWindow.open(map);
+                }
                 highlightPlayableArea(pt);
             });
             hiderCirclesTram.push(circle);
@@ -773,7 +796,7 @@ function placeMyLocationMarker(pos) {
         myLocationAccCircle.setRadius(accuracy);
     }
 
-    map.panTo(latLng);
+    // map.panTo eltávolítva – ne snappeljen a pozícióra automatikusan
 }
 
 function initLocationListener() {
