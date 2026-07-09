@@ -155,7 +155,7 @@ function drawHiders() {
 
     METRO_DATA.forEach(line => {
         // Metró megállók (töréspontok) mind fontosak
-        line.path.forEach(pt => {
+        line.path.forEach((pt, index) => {
             const circle = new google.maps.Circle({
                 center: pt,
                 radius: radius,
@@ -163,6 +163,10 @@ function drawHiders() {
                 ...style
             });
             circle.addListener('click', () => {
+                const ptName = pt.name ? ` (${pt.name})` : '';
+                const msg = `Kattintott megálló: ${line.name} vonal, [${index}]. pont${ptName} -> lat: ${pt.lat}, lng: ${pt.lng}`;
+                console.log(msg, pt);
+                if (typeof showToast === 'function') showToast(msg, 'info', 3000);
                 highlightPlayableArea(pt);
             });
             hiderCirclesMetro.push(circle);
@@ -181,7 +185,7 @@ function drawHiders() {
         if (line.branch4) tramPoints.push(...line.branch4);
         if (line.branch6) tramPoints.push(...line.branch6);
 
-        tramPoints.forEach(pt => {
+        tramPoints.forEach((pt, index) => {
             const circle = new google.maps.Circle({
                 center: pt,
                 radius: radius,
@@ -189,6 +193,10 @@ function drawHiders() {
                 ...style
             });
             circle.addListener('click', () => {
+                const ptName = pt.name ? ` (${pt.name})` : '';
+                const msg = `Kattintott megálló: ${line.name} villamos, [${index}]. pont${ptName} -> lat: ${pt.lat}, lng: ${pt.lng}`;
+                console.log(msg, pt);
+                if (typeof showToast === 'function') showToast(msg, 'info', 3000);
                 highlightPlayableArea(pt);
             });
             hiderCirclesTram.push(circle);
