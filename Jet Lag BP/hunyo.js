@@ -113,6 +113,12 @@ async function endGame() {
         updates['jetLag_log'] = logEntries;
 
         Storage.update(updates);
+        
+        const roomId = localStorage.getItem('local_roomId');
+        if (roomId && typeof db !== 'undefined') {
+            db.ref('rooms/' + roomId + '/status').set('lobby');
+        }
+
         updateUI();
         renderLog();
     }

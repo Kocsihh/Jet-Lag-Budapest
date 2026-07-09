@@ -246,10 +246,13 @@
             
             roomRef = db.ref('rooms/' + roomId);
             
+            // Ha korábban volt szerepünk, próbáljuk meg azt felvenni visszacsatlakozáskor
+            const previousRole = localStorage.getItem('local_role') || 'none';
+            
             // Csatlakozás tényének beírása
             roomRef.child('players/' + myUserId).set({
                 name: name,
-                role: 'none',
+                role: previousRole,
                 isHost: isHost
             });
             
@@ -271,7 +274,7 @@
                     } else if (myPlayer && myPlayer.role === 'seeker') {
                         window.location.href = './hunyo.html';
                     } else {
-                        showToast("Nem választottál szerepet, nem tudsz csatlakozni a játékhoz!");
+                        showToast("A játék már fut! Válassz egy szerepet a csatlakozáshoz.", "info", 5000);
                     }
                 }
             });
@@ -374,6 +377,7 @@
                 }
 
                 roomRef.child('status').set('playing');
+                roomRef.child('startedAt').set(Date.now());
             });
         }
         
@@ -386,10 +390,21 @@
             db.ref('rooms').once('value', snapshot => {
                 const rooms = snapshot.val();
                 if (!rooms) return;
+                
+                const now = Date.now();
+                const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+                
                 for (const roomId in rooms) {
                     const room = rooms[roomId];
-                    if (!room.players || Object.keys(room.players).length === 0) {
-                        db.ref('rooms/' + roomId).remove();
+                    const isEmpty = !room.players || Object.keys(room.players).length === 0;
+                    
+                    if (isEmpty) {
+                        const isOld = room.startedAt && (now - room.startedAt > TWELVE_HOURS);
+                        
+                        // Töröljük, ha üres ÉS (nem indult el MÉG a játék VAGY már nagyon régi)
+                        if (room.status !== 'playing' || isOld) {
+                            db.ref('rooms/' + roomId).remove();
+                        }
                     }
                 }
             }).catch(e => console.error("Cleanup error:", e));
