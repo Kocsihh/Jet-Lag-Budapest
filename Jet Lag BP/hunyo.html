@@ -4,9 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <title>Hunyó Központ | Jet Lag Budapest</title>
     <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMOAqGuk1x3mCk9_SeL98wY7g7pXi3sn0&libraries=geometry"></script>
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMOAqGuk1x3mCk9_SeL98wY7g7pXi3sn0&libraries=geometry" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="toast.css">
@@ -189,10 +193,10 @@
         <div id="map-status-bar">Válassz egy pontot a térképen!</div>
 
         <div class="map-controls">
+            <!-- Toggles -->
             <button class="btn-toggle" id="tramBtn" onclick="toggleTrams()">Villamosok: BE</button>
             <button class="btn-toggle" id="districtBtn" onclick="toggleDistricts()">Kerületek: KI</button>
             <button class="btn-toggle off" id="editDistBtn" onclick="toggleDistrictEditing()">Szerkesztés: KI</button>
-
             <!-- Radarok -->
             <button class="btn-radar" onclick="drawRadar(500)">R 500m</button>
             <button class="btn-radar" onclick="drawRadar(1000)">R 1km</button>
@@ -243,7 +247,7 @@
     <script src="toast.js"></script>
     <script src="dialog.js"></script>
     <script src="map_data.js"></script>
-    <script src="map.js"></script>
+    <script src="map.js?v=2"></script>
     <script src="hunyo.js"></script>
     <script src="hunyo_tabs.js"></script>
 

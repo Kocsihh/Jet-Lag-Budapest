@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Jet Lag: Budapest - Lobby</title>
     <style>
         body {
@@ -193,7 +196,7 @@
 
         function createRoom() {
             const name = document.getElementById('playerName').value.trim();
-            if (!name) return Toast.show("Kérlek írd be a neved!");
+            if (!name) return showToast("Kérlek írd be a neved!");
             
             localStorage.setItem('local_playerName', name);
             
@@ -215,18 +218,18 @@
             const name = document.getElementById('playerName').value.trim();
             const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
             
-            if (!name) return Toast.show("Kérlek írd be a neved!");
-            if (!code || code.length !== 4) return Toast.show("Érvénytelen szobakód!");
+            if (!name) return showToast("Kérlek írd be a neved!");
+            if (!code || code.length !== 4) return showToast("Érvénytelen szobakód!");
             
             // Check if room exists
             try {
                 const snapshot = await db.ref('rooms/' + code).once('value');
                 if (!snapshot.exists()) {
-                    return Toast.show("Ez a szoba nem létezik!");
+                    return showToast("Ez a szoba nem létezik!");
                 }
             } catch (e) {
                 console.error(e);
-                return Toast.show("Hiba történt a csatlakozáskor!");
+                return showToast("Hiba történt a csatlakozáskor!");
             }
             
             localStorage.setItem('local_playerName', name);
@@ -268,7 +271,7 @@
                     } else if (myPlayer && myPlayer.role === 'seeker') {
                         window.location.href = './hunyo.html';
                     } else {
-                        Toast.show("Nem választottál szerepet, nem tudsz csatlakozni a játékhoz!");
+                        showToast("Nem választottál szerepet, nem tudsz csatlakozni a játékhoz!");
                     }
                 }
             });
@@ -316,6 +319,29 @@
             // Limit disable
             btnHider.disabled = (hiderCount >= MAX_PER_ROLE && (!myPlayer || myPlayer.role !== 'hider'));
             btnSeeker.disabled = (seekerCount >= MAX_PER_ROLE && (!myPlayer || myPlayer.role !== 'seeker'));
+
+            // Host migration logic
+            const hasHost = Object.values(players).some(p => p.isHost);
+            if (!hasHost) {
+                // Nincs host! A legkisebb ID-jű játékos legyen a host
+                const playerIds = Object.keys(players).sort();
+                if (playerIds.length > 0 && playerIds[0] === myUserId) {
+                    isHost = true;
+                    if (roomRef) {
+                        roomRef.child('players/' + myUserId + '/isHost').set(true);
+                    }
+                    showToast("A játékmester kilépett. Te lettél az új játékmester!", "success", 4000);
+                }
+            }
+
+            // Gomb és üzenet megjelenítése aszerint, hogy host-e
+            if (isHost) {
+                document.getElementById('btnStartGame').classList.remove('hidden');
+                document.getElementById('waitingMsg').classList.add('hidden');
+            } else {
+                document.getElementById('btnStartGame').classList.add('hidden');
+                document.getElementById('waitingMsg').classList.remove('hidden');
+            }
         }
 
         function selectRole(role) {
@@ -326,14 +352,48 @@
         }
 
         function startGame() {
-            if (roomRef && isHost) {
+            if (!roomRef || !isHost) return;
+
+            // Ellenőrizzük a játékosokat
+            roomRef.child('players').once('value', (snap) => {
+                const players = snap.val() || {};
+                const vals = Object.values(players);
+                const hiders  = vals.filter(p => p.role === 'hider').length;
+                const seekers = vals.filter(p => p.role === 'seeker').length;
+
+                if (hiders < 1 || seekers < 1) {
+                    showToast("Legalább 1 Bújó és 1 Hunyó kell az indításhoz!", 'error', 3000);
+                    return;
+                }
+
+                // Mindenki választott-e szerepet?
+                const noRole = vals.filter(p => p.role === 'none').length;
+                if (noRole > 0) {
+                    showToast(`${noRole} játékos még nem választott szerepet!`, 'error', 3000);
+                    return;
+                }
+
                 roomRef.child('status').set('playing');
-            }
+            });
         }
         
         // Auto-fill from localStorage
         const savedName = localStorage.getItem('local_playerName');
         if (savedName) document.getElementById('playerName').value = savedName;
+
+        // Cleanup: Üres szobák törlése
+        if (typeof db !== 'undefined') {
+            db.ref('rooms').once('value', snapshot => {
+                const rooms = snapshot.val();
+                if (!rooms) return;
+                for (const roomId in rooms) {
+                    const room = rooms[roomId];
+                    if (!room.players || Object.keys(room.players).length === 0) {
+                        db.ref('rooms/' + roomId).remove();
+                    }
+                }
+            }).catch(e => console.error("Cleanup error:", e));
+        }
     </script>
 </body>
 </html>

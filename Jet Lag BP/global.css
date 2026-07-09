@@ -865,14 +865,13 @@ button:disabled {
    ============================================= */
 
 #tab-map {
-    width: 100%;
-    /* Fill remaining height below header, above tab-bar */
+    width: calc(100% + 40px);
+    margin-left: -20px;
     height: calc(100vh - 120px); 
     display: none;
     flex-direction: column;
-    padding: 0;
-    margin: 0;
-    max-width: 100%;
+    padding: 0 10px; /* little padding so controls don't touch edge completely */
+    box-sizing: border-box;
 }
 
 #tab-map.active {
@@ -895,11 +894,7 @@ button:disabled {
     gap: 10px;
     border-top: 1px solid rgba(100, 255, 218, 0.2);
     border-bottom: 1px solid rgba(100, 255, 218, 0.2);
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent) var(--bg-nav);
+    flex-wrap: wrap; /* Wrap helyett scroll: így kifér minden sorba */
     margin-bottom: 10px;
     border-radius: 12px;
 }
@@ -994,6 +989,22 @@ button:disabled {
     color: #fff;
     font-family: 'Outfit', monospace;
     letter-spacing: 2px;
+}
+
+@media (max-width: 380px) {
+    .game-status-bar {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 12px;
+    }
+    .stopwatch-display {
+        font-size: 24px;
+    }
+    .btn-caught {
+        width: 100%;
+        padding: 10px 16px !important;
+        font-size: 16px !important;
+    }
 }
 
 .btn-caught {

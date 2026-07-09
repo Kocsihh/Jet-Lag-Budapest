@@ -12,8 +12,17 @@ let myLocationTracking = false;
 let playerMarkers = {}; // Tárolja a többi játékos markerét
 
 // Új változók a megállókhoz
-let hiderCircles = [];
+let hiderCirclesMetro = [];
+let hiderCirclesTram = [];
 let hidersVisible = false;
+let activeHighlightPolygon = null;
+
+function clearPlayableAreaHighlight() {
+    if (activeHighlightPolygon) {
+        activeHighlightPolygon.setMap(null);
+        activeHighlightPolygon = null;
+    }
+}
 
 // Új változók a kerületekhez
 let districtPolygons = [];
@@ -132,18 +141,27 @@ function drawHiders() {
     const radius = 500;
     const style = {
         strokeColor: "#00BCD4",
-        strokeOpacity: 0.6,
+        strokeOpacity: 0.1, // Szinte láthatatlan körvonal
         strokeWeight: 1,
         fillColor: "#00BCD4",
-        fillOpacity: 0.15,
-        map: map,
-        clickable: false
+        fillOpacity: 0.15, // Lágy kitöltés, ami átfedésnél kicsit sötétebb lesz
+        clickable: true
     };
 
-    let points = [];
     METRO_DATA.forEach(line => {
         // Metró megállók (töréspontok) mind fontosak
-        points.push(...line.path);
+        line.path.forEach(pt => {
+            const circle = new google.maps.Circle({
+                center: pt,
+                radius: radius,
+                map: map,
+                ...style
+            });
+            circle.addListener('click', () => {
+                highlightPlayableArea(pt);
+            });
+            hiderCirclesMetro.push(circle);
+        });
     });
 
     TRAM_DATA.forEach(line => {
@@ -153,26 +171,103 @@ function drawHiders() {
         const stopPoints = hasNamedStops
             ? line.commonPath.filter(pt => pt.name)
             : line.commonPath;
-        points.push(...stopPoints);
-        if (line.branch4) points.push(...line.branch4);
-        if (line.branch6) points.push(...line.branch6);
+            
+        let tramPoints = [...stopPoints];
+        if (line.branch4) tramPoints.push(...line.branch4);
+        if (line.branch6) tramPoints.push(...line.branch6);
+        
+        tramPoints.forEach(pt => {
+            const circle = new google.maps.Circle({
+                center: pt,
+                radius: radius,
+                map: tramsVisible ? map : null,
+                ...style
+            });
+            circle.addListener('click', () => {
+                highlightPlayableArea(pt);
+            });
+            hiderCirclesTram.push(circle);
+        });
     });
 
-    points.forEach(pt => {
-        const circle = new google.maps.Circle({
-            center: pt,
-            radius: radius,
-            ...style
-        });
-        hiderCircles.push(circle);
-    });
+    // Ha a térképre kattintunk, tűnjön el a kiemelés
+    google.maps.event.addListener(map, 'click', clearPlayableAreaHighlight);
 
     hidersVisible = true;
 }
 
+function highlightPlayableArea(clickedPt) {
+    clearPlayableAreaHighlight();
+    
+    if (typeof turf === 'undefined') {
+        console.error("Turf.js nincs betöltve!");
+        return;
+    }
+    
+    // 1. Összegyűjtjük az aktív megállókat
+    const activeStops = [];
+    METRO_DATA.forEach(line => {
+        line.path.forEach(pt => { activeStops.push({ lat: pt.lat, lng: pt.lng }); });
+    });
+
+    if (tramsVisible) {
+        TRAM_DATA.forEach(line => {
+            const hasNamedStops = line.commonPath.some(pt => pt.name);
+            const stopPoints = hasNamedStops ? line.commonPath.filter(pt => pt.name) : line.commonPath;
+            let tramPoints = [...stopPoints];
+            if (line.branch4) tramPoints.push(...line.branch4);
+            if (line.branch6) tramPoints.push(...line.branch6);
+            
+            tramPoints.forEach(pt => { activeStops.push({ lat: pt.lat, lng: pt.lng }); });
+        });
+    }
+
+    // 2. Kiszámoljuk a Voronoi-t Turf.js-el
+    const points = turf.featureCollection(activeStops.map(s => turf.point([s.lng, s.lat])));
+    const bbox = [18.9, 47.3, 19.3, 47.7]; // Budapest bbox
+    const voronoiPolygons = turf.voronoi(points, { bbox: bbox });
+    
+    // 3. Megkeressük a kattintott ponthoz tartozó Voronoi poligont
+    const clickedIndex = activeStops.findIndex(s => s.lat === clickedPt.lat && s.lng === clickedPt.lng);
+    if (clickedIndex === -1) return;
+    
+    const voronoiPoly = voronoiPolygons.features[clickedIndex];
+    if (!voronoiPoly) return; 
+    
+    // 4. Létrehozunk egy 500m-es Turf kört
+    const circle500m = turf.circle([clickedPt.lng, clickedPt.lat], 0.5, { steps: 64, units: 'kilometers' });
+    
+    // 5. Vesszük a kettő metszetét
+    const intersection = turf.intersect(voronoiPoly, circle500m);
+    if (!intersection) return;
+    
+    // 6. Felrajzoljuk a Google Maps-re
+    const geom = intersection.geometry;
+    let paths = [];
+    if (geom.type === 'Polygon') {
+        paths = geom.coordinates[0].map(coord => ({ lat: coord[1], lng: coord[0] }));
+    } else if (geom.type === 'MultiPolygon') {
+        paths = geom.coordinates.map(polygon => polygon[0].map(coord => ({ lat: coord[1], lng: coord[0] })));
+    }
+    
+    activeHighlightPolygon = new google.maps.Polygon({
+        paths: paths,
+        strokeColor: "#FF9800",
+        strokeOpacity: 0.9,
+        strokeWeight: 3,
+        fillColor: "#FF9800",
+        fillOpacity: 0.4,
+        map: map,
+        zIndex: 500
+    });
+}
+
 function clearHiders() {
-    hiderCircles.forEach(c => c.setMap(null));
-    hiderCircles = [];
+    clearPlayableAreaHighlight();
+    hiderCirclesMetro.forEach(c => c.setMap(null));
+    hiderCirclesTram.forEach(c => c.setMap(null));
+    hiderCirclesMetro = [];
+    hiderCirclesTram = [];
     hidersVisible = false;
 }
 
@@ -425,8 +520,15 @@ function updateStatus(text) {
 }
 
 function toggleTrams() {
+    clearPlayableAreaHighlight();
     tramsVisible = !tramsVisible;
     tramLines.forEach(line => line.setMap(tramsVisible ? map : null));
+    
+    // Frissítjük a megállók körvonalait is
+    if (hidersVisible) {
+        hiderCirclesTram.forEach(c => c.setMap(tramsVisible ? map : null));
+    }
+    
     document.getElementById('tramBtn').innerText = tramsVisible ? "Villamosok: BE" : "Villamosok: KI";
     document.getElementById('tramBtn').classList.toggle('off', !tramsVisible);
 }
