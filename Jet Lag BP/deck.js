@@ -27,6 +27,9 @@ async function initFirebaseDeck() {
         
         // Refresh UI
         initDeck();
+
+        // Kérdés tab szinkronizáció - minden Firebase frissítésnél fut
+        renderPendingQuestion();
     });
 }
 window.addEventListener('load', initFirebaseDeck);
@@ -181,7 +184,6 @@ function renderActiveEffects() {
         cardEl.innerHTML = `
             ${renderCardContent(effect)}
             ${timerHtml}
-            <button class="dismiss-btn" onclick="dismissEffect(${index})">TELJESÍTVE / TÖRLÉS</button>
         `;
         display.appendChild(cardEl);
     });
@@ -357,4 +359,145 @@ function initDeck() {
     if (!timerInterval) {
         timerInterval = setInterval(updateActiveTimers, 1000);
     }
+}
+
+
+// =============================================================================
+// KÉRDÉS TAB LOGIKA
+// Szinkronizálja a hunyó által feltétt kérdéseket Firebase-ből
+// és megjeleníti őket a Bújó oldalon.
+// =============================================================================
+
+let questionCountdownInterval = null;
+
+function renderPendingQuestion() {
+    const pq = Storage.get('jetLag_pendingQuestion', null);
+    const inner = document.getElementById('question-tab-inner');
+    const badge = document.getElementById('question-badge');
+    if (!inner) return;
+
+    // Badge a tab-on
+    if (badge) badge.style.display = pq ? 'inline-block' : 'none';
+
+    if (!pq) {
+        if (questionCountdownInterval) {
+            clearInterval(questionCountdownInterval);
+            questionCountdownInterval = null;
+        }
+        inner.innerHTML = `
+            <div class="no-question-msg">
+                <span style="font-size:3rem">💭</span>
+                <p>Nincs aktív kérdés</p>
+                <p style="font-size:0.8rem; color:var(--text-dim)">Amikor a hunyó feltesz egy kérdést, itt fog megjelenni.</p>
+            </div>`;
+        return;
+    }
+
+    // Van pending kérdésünk— Meghatározuk hány perc van válaszolni (5 vagy 10)
+    const answerMinutes = pq.isPhoto ? 10 : 5;
+    const deadlineMs = pq.startTime + answerMinutes * 60 * 1000;
+
+    // Vétó és szuper-vétó elérhetősége
+    const hasVeto = inventory.some(c => c.nev === 'Vétó');
+    const hasSuperVeto = inventory.some(c => c.nev === 'Szuper-Vétó');
+    const vetoLabel = pq.vetoedCount > 0 ? `Vétózva (x${pq.vetoedCount})` : '';
+
+    inner.innerHTML = `
+        <div class="question-card">
+            <div class="question-card-label">Aktív kérdés</div>
+            <div class="question-name">${pq.qName}</div>
+            ${vetoLabel ? `<div class="question-vetoed-tag">🔄 ${vetoLabel}</div>` : ''}
+            ${pq.isPhoto ? '<div class="question-photo-tag">📸 Fotó kérdés (10 perc)</div>' : ''}
+            <div class="question-timer-wrap">
+                <div class="question-timer-label">Válaszolni kell</div>
+                <div class="question-timer" id="question-countdown">--:--</div>
+            </div>
+            <div class="question-actions">
+                <button class="q-outcome-btn q-answered" onclick="handleBujoOutcome('answered')">✅ VÁLASZOLTAK</button>
+                <button class="q-outcome-btn q-veto ${hasVeto ? '' : 'disabled'}" onclick="handleBujoOutcome('veto')" ${hasVeto ? '' : 'disabled'}>❌ VÉTÓ ${hasVeto ? '' : '(nincs kártya)'}</button>
+                <button class="q-outcome-btn q-superveto ${hasSuperVeto ? '' : 'disabled'}" onclick="handleBujoOutcome('superveto')" ${hasSuperVeto ? '' : 'disabled'}>☢️ SZUPER-VÉTÓ ${hasSuperVeto ? '' : '(nincs kártya)'}</button>
+            </div>
+        </div>`;
+
+    // Visszaszámláló tick
+    if (questionCountdownInterval) clearInterval(questionCountdownInterval);
+    const tick = () => {
+        const el = document.getElementById('question-countdown');
+        if (!el) { clearInterval(questionCountdownInterval); return; }
+        const rem = Math.max(0, deadlineMs - Date.now());
+        const m = Math.floor(rem / 60000);
+        const s = Math.floor((rem % 60000) / 1000);
+        el.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        el.classList.toggle('timer-urgent', rem < 60000 && rem > 0);
+        el.classList.toggle('timer-expired', rem === 0);
+    };
+    tick();
+    questionCountdownInterval = setInterval(tick, 1000);
+}
+
+function handleBujoOutcome(type) {
+    const pq = Storage.get('jetLag_pendingQuestion', null);
+    if (!pq) return;
+
+    const { qName, minutes } = pq;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+
+    // Betöltjük a hunyó állapotot Firebase-ből (ugyanabba a szobába írunk)
+    let exhaustedQ = Storage.get('jetLag_exhausted', []);
+    let vetoedQ = Storage.get('jetLag_vetoed', {});
+    let logEntries = Storage.get('jetLag_log', []);
+
+    let shouldStartTimer = true;
+    let logMsg = qName;
+
+    if (type === 'answered') {
+        logMsg += ' (Válaszolt)';
+        exhaustedQ.push(qName);
+    } else if (type === 'veto') {
+        logMsg += ' (Vétó)';
+        shouldStartTimer = false;
+        // Kivételezi a Vétó kártyát az inventoryból
+        const vetoIdx = inventory.findIndex(c => c.nev === 'Vétó');
+        if (vetoIdx !== -1) {
+            inventory.splice(vetoIdx, 1);
+        }
+        vetoedQ[qName] = (vetoedQ[qName] || 0) + 1;
+    } else if (type === 'superveto') {
+        logMsg += ' (Szuper Vétó)';
+        exhaustedQ.push(qName);
+        // Kivételezi a Szuper-Vétó kártyát az inventoryból
+        const svIdx = inventory.findIndex(c => c.nev === 'Szuper-Vétó');
+        if (svIdx !== -1) {
+            inventory.splice(svIdx, 1);
+        }
+    }
+
+    // Log bejegyzés, és állapot írása Firebase-re
+    logEntries.unshift({ time: timeStr, text: logMsg });
+
+    const updates = {
+        'jetLag_exhausted': exhaustedQ,
+        'jetLag_vetoed': vetoedQ,
+        'jetLag_log': logEntries,
+        'jetLag_inventory': inventory
+    };
+
+    if (shouldStartTimer) {
+        const endTime = Date.now() + minutes * 60 * 1000;
+        updates['jetLag_timerEnd'] = endTime;
+        updates['jetLag_timerLabel'] = `Várakozás... [${logMsg}]`;
+    }
+
+    Storage.update(updates);
+
+    // Kérdés törlése
+    Storage.remove('jetLag_pendingQuestion');
+
+    showToast(type === 'answered' ? '✅ Válasz rögzítve! Timer indul a hunyóknál.' : (type === 'veto' ? '❌ Vétó eljátszva!' : '☢️ Szuper-Vétó eljátszva!'), 'success', 3500);
+    
+    // Helyi UI frissítés (a Storage callback is le fog futni, de az aszinkron)
+    renderPendingQuestion();
+    renderInventory();
+    saveDeckState();
 }

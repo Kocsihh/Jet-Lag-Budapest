@@ -204,10 +204,10 @@ function highlightPlayableArea(clickedPt) {
         return;
     }
     
-    // 1. Összegyűjtjük az aktív megállókat
-    const activeStops = [];
+    // 1. Összegyűjtjük a nyers aktív megállókat
+    const rawStops = [];
     METRO_DATA.forEach(line => {
-        line.path.forEach(pt => { activeStops.push({ lat: pt.lat, lng: pt.lng }); });
+        line.path.forEach(pt => { rawStops.push({ lat: pt.lat, lng: pt.lng }); });
     });
 
     if (tramsVisible) {
@@ -218,20 +218,43 @@ function highlightPlayableArea(clickedPt) {
             if (line.branch4) tramPoints.push(...line.branch4);
             if (line.branch6) tramPoints.push(...line.branch6);
             
-            tramPoints.forEach(pt => { activeStops.push({ lat: pt.lat, lng: pt.lng }); });
+            tramPoints.forEach(pt => { rawStops.push({ lat: pt.lat, lng: pt.lng }); });
         });
     }
 
-    // 2. Kiszámoljuk a Voronoi-t Turf.js-el
-    const points = turf.featureCollection(activeStops.map(s => turf.point([s.lng, s.lat])));
+    // 1.5. Intelligens Csoportosítás (Clustering) 150 méteren belül
+    const clusters = [];
+    rawStops.forEach(stop => {
+        let foundCluster = false;
+        for (let cluster of clusters) {
+            const dist = turf.distance(
+                turf.point([stop.lng, stop.lat]), 
+                turf.point([cluster.center.lng, cluster.center.lat]), 
+                { units: 'kilometers' }
+            );
+            if (dist <= 0.30) { // 300 méter sugarú vonzáskörzet (Budapest sűrűségénél biztonságos)
+                cluster.points.push(stop);
+                foundCluster = true;
+                break;
+            }
+        }
+        if (!foundCluster) {
+            clusters.push({ center: stop, points: [stop] });
+        }
+    });
+
+    // 2. Kiszámoljuk a Voronoi-t a klaszterek középpontjaira
+    const points = turf.featureCollection(clusters.map(c => turf.point([c.center.lng, c.center.lat])));
     const bbox = [18.9, 47.3, 19.3, 47.7]; // Budapest bbox
     const voronoiPolygons = turf.voronoi(points, { bbox: bbox });
     
-    // 3. Megkeressük a kattintott ponthoz tartozó Voronoi poligont
-    const clickedIndex = activeStops.findIndex(s => s.lat === clickedPt.lat && s.lng === clickedPt.lng);
-    if (clickedIndex === -1) return;
+    // 3. Megkeressük a kattintott ponthoz tartozó klaszter Voronoi poligonját
+    const clickedClusterIndex = clusters.findIndex(c => 
+        c.points.some(p => p.lat === clickedPt.lat && p.lng === clickedPt.lng)
+    );
+    if (clickedClusterIndex === -1) return;
     
-    const voronoiPoly = voronoiPolygons.features[clickedIndex];
+    const voronoiPoly = voronoiPolygons.features[clickedClusterIndex];
     if (!voronoiPoly) return; 
     
     // 4. Létrehozunk egy 500m-es Turf kört

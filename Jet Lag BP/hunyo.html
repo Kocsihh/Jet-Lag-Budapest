@@ -9,13 +9,13 @@
     <meta http-equiv="Expires" content="0">
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <title>Hunyó Központ | Jet Lag Budapest</title>
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMOAqGuk1x3mCk9_SeL98wY7g7pXi3sn0&libraries=geometry" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDMOAqGuk1x3mCk9_SeL98wY7g7pXi3sn0&libraries=geometry"
+        async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="toast.css">
     <link rel="stylesheet" href="dialog.css">
-    
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -23,6 +23,17 @@
 </head>
 
 <body>
+    <div id="room-code-display" class="room-code-box" style="display:none;" title="Szobakód"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const code = localStorage.getItem('local_roomId');
+            if (code) {
+                const el = document.getElementById('room-code-display');
+                el.innerText = `Kód: ${code}`;
+                el.style.display = 'block';
+            }
+        });
+    </script>
     <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
 
     <h1>HUNYÓ KÖZPONT</h1>
@@ -34,6 +45,12 @@
         <button class="tab-btn active" id="tab-btn-questions" onclick="switchHunyoTab('questions')">
             <span class="tab-icon">🕵️</span>
             <span>Kérdések</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-curses" onclick="switchHunyoTab('curses')">
+            <span class="tab-icon">☠️</span>
+            <span>Átkok</span>
+            <span id="curse-badge"
+                style="display:none; background:#e74c3c; color:#fff; border-radius:50%; padding:0 5px; font-size:11px; margin-left:4px;"></span>
         </button>
         <button class="tab-btn" id="tab-btn-map" onclick="switchHunyoTab('map')">
             <span class="tab-icon">🗺️</span>
@@ -69,6 +86,9 @@
             </div>
         </div>
 
+        <!-- FOLYAMATBAN LÉVŐ KÉRDÉS JELZő -->
+        <div id="pending-question-banner" style="display:none;"></div>
+
         <div class="dashboard-grid" id="main-grid">
             <!-- 1. FOTÓ -->
             <div class="category-section section-egyezeto">
@@ -102,23 +122,23 @@
             <div class="category-section section-mero">
                 <div class="category-title">Mérő kérdések (2,1)</div>
                 <div class="button-grid">
-                    <button class="q-btn" onclick="askQuestion('Kórház?', 10)">
-                        <span>Kórház?</span><span class="reward-info">10p timer</span>
+                    <button class="q-btn" onclick="askQuestion('Kórház?', 5)">
+                        <span>Kórház?</span><span class="reward-info">5p timer</span>
                     </button>
-                    <button class="q-btn" onclick="askQuestion('Mozi?', 10)">
-                        <span>Mozi?</span><span class="reward-info">10p timer</span>
+                    <button class="q-btn" onclick="askQuestion('Mozi?', 5)">
+                        <span>Mozi?</span><span class="reward-info">5p timer</span>
                     </button>
-                    <button class="q-btn" onclick="askQuestion('Meki?', 10)">
-                        <span>Meki?</span><span class="reward-info">10p timer</span>
+                    <button class="q-btn" onclick="askQuestion('Meki?', 5)">
+                        <span>Meki?</span><span class="reward-info">5p timer</span>
                     </button>
-                    <button class="q-btn" onclick="askQuestion('Reptér?', 10)">
-                        <span>Reptér?</span><span class="reward-info">10p timer</span>
+                    <button class="q-btn" onclick="askQuestion('Reptér?', 5)">
+                        <span>Reptér?</span><span class="reward-info">5p timer</span>
                     </button>
-                    <button class="q-btn" onclick="askQuestion('Állatkert?', 10)">
-                        <span>Állatkert?</span><span class="reward-info">10p timer</span>
+                    <button class="q-btn" onclick="askQuestion('Állatkert?', 5)">
+                        <span>Állatkert?</span><span class="reward-info">5p timer</span>
                     </button>
-                    <button class="q-btn" onclick="askQuestion('Budapest Park?', 10)">
-                        <span>Budapest Park?</span><span class="reward-info">10p timer</span>
+                    <button class="q-btn" onclick="askQuestion('Budapest Park?', 5)">
+                        <span>Budapest Park?</span><span class="reward-info">5p timer</span>
                     </button>
                 </div>
             </div>
@@ -133,8 +153,8 @@
                     <button class="q-btn" onclick="askQuestion('Radar 1km?', 10)">
                         <span>Radar 1km?</span><span class="reward-info">10p timer</span>
                     </button>
-                    <button class="q-btn" onclick="askQuestion('Radar egyéni?', 15)">
-                        <span>Radar egyéni?</span><span class="reward-info">15p timer</span>
+                    <button class="q-btn" onclick="askQuestion('Radar egyéni?', 10)">
+                        <span>Radar egyéni?</span><span class="reward-info">10p timer</span>
                     </button>
                 </div>
             </div>
@@ -217,32 +237,24 @@
     </div>
 
     <!-- ==========================================
-         OUTCOME MODAL (ONLY FOR QUESTIONS)
+         TAB CONTENT: CURSES (ÁTKOK)
          ========================================== -->
-    <div class="modal-overlay" id="outcome-modal">
-        <div class="modal-content">
-            <h2 id="outcome-q-name">Kérdés</h2>
-            <div class="outcome-options">
-                <button class="outcome-btn" onclick="handleOutcome('answered')">
-                    <strong>✅ Válaszoltak</strong>
-                    <span>Kérdés elhasználódik, timer indul.</span>
-                </button>
-                <button class="outcome-btn" onclick="handleOutcome('veto')">
-                    <strong>❌ Vétó (Kártya)</strong>
-                    <span>Kérdés megmarad (dupla idő lesz), NINCS válasz, NINCS timer.</span>
-                </button>
-                <button class="outcome-btn" onclick="handleOutcome('superveto')">
-                    <strong>☢️ Szuper Vétó (Kártya)</strong>
-                    <span>A kérdés elhasználódik, NINCS válasz, de a timer INDUL.</span>
-                </button>
+    <div id="tab-curses" class="tab-content">
+        <div class="curses-container">
+            <div class="curses-header">
+                <h2>☠️ Aktív Átkok</h2>
+                <p class="curses-subtitle">A bújók által kijátszott, jelenleg aktív átkok</p>
             </div>
-            <button class="modal-cancel" onclick="closeOutcomeModal()">Mégsem</button>
+            <div id="curses-list">
+                <div class="no-curses-msg">
+                    <span style="font-size:3rem">✨</span>
+                    <p>Jelenleg nincsenek aktív átkok!</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         SCRIPTS
-         ========================================== -->
+
     <script src="storage.js"></script>
     <script src="toast.js"></script>
     <script src="dialog.js"></script>
@@ -252,7 +264,8 @@
     <script src="hunyo_tabs.js"></script>
 
     <!-- ELKAPTUK MODAL -->
-    <div id="caught-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
+    <div id="caught-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center;">
         <div class="caught-modal-inner">
             <div id="caught-body"></div>
             <button class="caught-close-btn" onclick="closeCaughtModal()">Bezárás</button>

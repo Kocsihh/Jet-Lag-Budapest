@@ -1108,3 +1108,411 @@ button:disabled {
     cursor: pointer;
     font-family: 'Outfit', sans-serif !important;
 }
+
+/* =============================================================================
+   ÁTOK TAB STÍLUSOK (Hunyó Központ)
+   ============================================================================= */
+
+.curses-container {
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.curses-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.curses-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+}
+
+.curses-subtitle {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.no-curses-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+}
+
+.no-curses-msg p {
+    font-size: 1.1rem;
+    margin-top: 12px;
+}
+
+.curse-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(244, 67, 54, 0.4);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.curse-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #e74c3c, #ff9800);
+}
+
+.curse-card.curse-expired {
+    opacity: 0.45;
+    border-color: rgba(255,255,255,0.1);
+    filter: grayscale(0.6);
+}
+
+.curse-card.curse-expired::before {
+    background: #555;
+}
+
+.curse-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.curse-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.curse-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+    flex: 1;
+}
+
+.curse-timer-badge {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    padding: 4px 12px;
+    border-radius: 20px;
+    min-width: 60px;
+    text-align: center;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.5);
+}
+
+.curse-no-timer {
+    background: rgba(255,152,0,0.2);
+    color: #ff9800;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,152,0,0.3);
+    flex-shrink: 0;
+}
+
+.curse-desc {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+}
+
+.curse-dismiss-btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.1));
+    border: 1px solid rgba(39, 174, 96, 0.5);
+    border-radius: 10px;
+    color: #2ecc71;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.curse-dismiss-btn:hover {
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.4), rgba(39, 174, 96, 0.25));
+    border-color: #2ecc71;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.curse-dismiss-btn:active {
+    transform: translateY(0);
+}
+
+
+
+/* =============================================================================
+   FOLYAMATBAN LÉVŐ KÉRDÉS BANNER (Hunyó oldal)
+   ============================================================================= */
+
+.pending-q-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(230, 126, 34, 0.15), rgba(230, 126, 34, 0.08));
+    border: 1px solid rgba(230, 126, 34, 0.4);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+    animation: banner-slide-in 0.3s ease;
+}
+
+@keyframes banner-slide-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.pending-q-pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e67e22;
+    flex-shrink: 0;
+    animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.5); opacity: 0.5; }
+}
+
+.pending-q-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #e67e22;
+    flex-shrink: 0;
+}
+
+.pending-q-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    flex: 1;
+}
+
+.pending-q-wait {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    width: 100%;
+    margin-left: 20px;
+}
+
+/* =============================================================================
+   KÉRDÉS TAB STÍLUSOK (Bújó oldal – deck.html)
+   ============================================================================= */
+
+.question-tab-container {
+    padding: 16px;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.no-question-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+}
+
+.no-question-msg p {
+    font-size: 1rem;
+    margin: 8px 0 0 0;
+}
+
+.question-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(100, 255, 218, 0.25);
+    border-radius: 18px;
+    padding: 24px 20px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.question-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), #00bcd4);
+}
+
+.question-card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.question-name {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1.2;
+    margin-bottom: 12px;
+}
+
+.question-vetoed-tag,
+.question-photo-tag {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    margin-right: 6px;
+}
+
+.question-vetoed-tag {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.35);
+}
+
+.question-photo-tag {
+    background: rgba(100, 255, 218, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(100, 255, 218, 0.25);
+}
+
+.question-timer-wrap {
+    text-align: center;
+    margin: 20px 0 22px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+}
+
+.question-timer-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.question-timer {
+    font-size: 3rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+}
+
+.question-timer.timer-urgent {
+    color: #ff9800;
+    animation: pulse-orange 1s ease-in-out infinite;
+}
+
+.question-timer.timer-expired {
+    color: var(--danger);
+}
+
+@keyframes pulse-orange {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.question-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.q-outcome-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.q-outcome-btn.q-answered {
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.25), rgba(39, 174, 96, 0.15));
+    border: 1px solid rgba(39, 174, 96, 0.5);
+    color: #2ecc71;
+}
+
+.q-outcome-btn.q-answered:hover {
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.45), rgba(39, 174, 96, 0.3));
+    box-shadow: 0 4px 14px rgba(39, 174, 96, 0.3);
+    transform: translateY(-1px);
+}
+
+.q-outcome-btn.q-veto {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1));
+    border: 1px solid rgba(231, 76, 60, 0.45);
+    color: #e74c3c;
+}
+
+.q-outcome-btn.q-veto:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.4), rgba(231, 76, 60, 0.25));
+    box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3);
+    transform: translateY(-1px);
+}
+
+.q-outcome-btn.q-superveto {
+    background: linear-gradient(135deg, rgba(189, 147, 249, 0.2), rgba(189, 147, 249, 0.1));
+    border: 1px solid rgba(189, 147, 249, 0.45);
+    color: var(--special);
+}
+
+.q-outcome-btn.q-superveto:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(189, 147, 249, 0.4), rgba(189, 147, 249, 0.25));
+    box-shadow: 0 4px 14px rgba(189, 147, 249, 0.3);
+    transform: translateY(-1px);
+}
+
+.q-outcome-btn.disabled,
+.q-outcome-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* =============================================================================
+   SZOBAKÓD MEGJELENÍTŐ (Jobb felső sarok)
+   ============================================================================= */
+.room-code-box {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(100, 255, 218, 0.15);
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+

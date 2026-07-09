@@ -16,6 +16,17 @@
 </head>
 
 <body>
+    <div id="room-code-display" class="room-code-box" style="display:none;" title="Szobakód"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const code = localStorage.getItem('local_roomId');
+            if (code) {
+                const el = document.getElementById('room-code-display');
+                el.innerText = `Kód: ${code}`;
+                el.style.display = 'block';
+            }
+        });
+    </script>
     <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
     <div id="status-bar">Válassz egy pontot a térképen!</div>
     <div id="map"></div>

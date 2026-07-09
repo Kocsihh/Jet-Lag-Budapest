@@ -26,6 +26,17 @@
 </head>
 
 <body>
+    <div id="room-code-display" class="room-code-box" style="display:none;" title="Szobakód"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const code = localStorage.getItem('local_roomId');
+            if (code) {
+                const el = document.getElementById('room-code-display');
+                el.innerText = `Kód: ${code}`;
+                el.style.display = 'block';
+            }
+        });
+    </script>
     <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
 
     <h1>ROHANÓ PAKLI</h1>
@@ -37,6 +48,11 @@
         <button class="tab-btn active" id="tab-btn-deck" onclick="switchDeckTab('deck')">
             <span class="tab-icon">🃏</span>
             <span>Pakli</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-question" onclick="switchDeckTab('question')">
+            <span class="tab-icon">❓</span>
+            <span>Kérdés</span>
+            <span id="question-badge" style="display:none; background:#e67e22; color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; line-height:16px; text-align:center; margin-left:4px; flex-shrink:0;">!</span>
         </button>
         <button class="tab-btn" id="tab-btn-map" onclick="switchDeckTab('map')">
             <span class="tab-icon">🗺️</span>
@@ -86,6 +102,21 @@
             <button class="btn-hiders" id="hidersBtn" onclick="togglePossibleHiders()">Megállók (500m): KI</button>
         </div>
         <div id="map"></div>
+    </div>
+
+    <!-- ==========================================
+         TAB CONTENT: QUESTION
+         ========================================== -->
+    <div id="tab-question" class="tab-content">
+        <div class="question-tab-container">
+            <div id="question-tab-inner">
+                <div class="no-question-msg">
+                    <span style="font-size:3rem">💭</span>
+                    <p>Nincs aktív kérdés</p>
+                    <p style="font-size:0.8rem; color:var(--text-dim)">Amikor a hunyó feltes z egy kérdést, itt fog megjelenni.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="storage.js"></script>
