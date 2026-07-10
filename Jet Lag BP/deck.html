@@ -97,8 +97,13 @@
     <div id="tab-map" class="tab-content">
         <div id="map-status-bar">A Hunyók helyzete a térképen</div>
         <div class="map-controls">
-            <!-- Bújóknak csak Helyzetem gomb -->
+            <!-- Bújóknak is elérhető a radar és hőmérő -->
             <button class="btn-location off" id="myLocationBtn" onclick="toggleMyLocation()">📍 Helyzetem</button>
+            <button class="btn-radar" onclick="promptCustomRadar()">R Egyéni</button>
+            <button class="btn-thermo" onclick="startThermometer(2000)">Hő 2km</button>
+            <button class="btn-thermo" onclick="startThermometer(5000)">Hő 5km</button>
+            <button class="btn-swap" id="swapBtn" onclick="swapColors()" style="display:none;">Színcsere</button>
+            <button class="btn-reset-map" onclick="clearAll()">Törlés</button>
             <button class="btn-toggle" id="districtBtn" onclick="toggleDistricts()">Kerületek: KI</button>
             <button class="btn-toggle off" id="editDistBtn" onclick="toggleDistrictEditing()">Szerkesztés: KI</button>
             <button class="btn-toggle" id="tramBtn" onclick="toggleTrams()">Villamosok: BE</button>

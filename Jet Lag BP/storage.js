@@ -23,6 +23,17 @@ const Storage = {
         this.isSynced = true;
         this._dbRef = db.ref('rooms/' + roomId + '/gameState');
         
+        // RECONNECTION FIX: Jelezzük a szervernek, hogy visszatértünk a játékba (már nem vagyunk offline)
+        const myUserId = localStorage.getItem('local_userId');
+        if (myUserId && typeof db !== 'undefined') {
+            const playerRef = db.ref('rooms/' + roomId + '/players/' + myUserId);
+            playerRef.child('isOffline').set(false);
+            playerRef.child('lastDisconnect').set(null);
+            // Ha ez a lap bezárul, újra legyünk offline
+            playerRef.child('isOffline').onDisconnect().set(true);
+            playerRef.child('lastDisconnect').onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+        }
+        
         return new Promise((resolve) => {
             // Feliratkozás a változásokra
             this._dbRef.on('value', (snapshot) => {

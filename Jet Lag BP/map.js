@@ -95,22 +95,22 @@ function initMap() {
 
     const myRole = localStorage.getItem('local_role');
 
-    if (myRole !== 'hider') {
-        seekerMarker = new google.maps.Marker({
-            position: bpCenter,
-            map: map,
-            draggable: true,
-            icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 10, fillColor: "#ff4500", fillOpacity: 1, strokeWeight: 2, strokeColor: "white"
-            },
-            label: { text: "HUNYÓ", color: "white", fontWeight: "bold", fontSize: "12px" }
-        });
+    const isHider = (myRole === 'hider');
+    
+    seekerMarker = new google.maps.Marker({
+        position: bpCenter,
+        map: map,
+        draggable: true,
+        icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 10, fillColor: isHider ? "#4CAF50" : "#ff4500", fillOpacity: 1, strokeWeight: 2, strokeColor: "white"
+        },
+        label: { text: isHider ? "BÚJÓ" : "HUNYÓ", color: "white", fontWeight: "bold", fontSize: "12px" }
+    });
 
-        seekerMarker.addListener('dragend', () => {
-            saveState();
-        });
-    }
+    seekerMarker.addListener('dragend', () => {
+        saveState();
+    });
 
     map.addListener("click", (e) => {
         if (!thermoState.active) return;
@@ -614,7 +614,7 @@ function promptCustomRadar() {
     }
 }
 
-function drawRadar(radius, center = null, color = "#ff4500") {
+function drawRadar(radius, center = null, color = "#ff4500", skipSave = false) {
     const radarCenter = center || seekerMarker.getPosition();
     const circle = new google.maps.Circle({
         strokeColor: color, strokeOpacity: 0.8, strokeWeight: 2,
@@ -635,16 +635,16 @@ function drawRadar(radius, center = null, color = "#ff4500") {
 
     radarCircles.push(circle);
     map.panTo(radarCenter);
-    saveState();
+    if (!skipSave) saveState();
 }
 
-function clearRadar() {
+function clearRadar(skipSave = false) {
     radarCircles.forEach(c => c.setMap(null));
     radarCircles = [];
-    saveState();
+    if (!skipSave) saveState();
 }
 
-function clearThermometer() {
+function clearThermometer(skipSave = false) {
     if (thermoState.markerA) thermoState.markerA.setMap(null);
     if (thermoState.markerB) thermoState.markerB.setMap(null);
     if (thermoState.guideCircle) thermoState.guideCircle.setMap(null);
@@ -657,14 +657,15 @@ function clearThermometer() {
     updateStatus("");
     map.setOptions({ draggableCursor: null });
     document.getElementById('swapBtn').style.display = 'none';
-    saveState();
+    if (!skipSave) saveState();
 }
 
 function clearAll() {
-    clearRadar();
-    clearThermometer();
+    clearRadar(true);
+    clearThermometer(true);
     clearHiders();
-    Storage.remove('jetLagState');
+    const myRole = localStorage.getItem('local_role') || 'none';
+    Storage.remove('jetLagState_' + myRole);
     showToast('Térkép sikeresen letisztítva!', 'success');
     // Kerületek nem kerülnek törlésre a felhasználó kérésére
 }
@@ -796,7 +797,6 @@ function placeMyLocationMarker(pos) {
         myLocationAccCircle.setRadius(accuracy);
     }
 
-    // map.panTo eltávolítva – ne snappeljen a pozícióra automatikusan
 }
 
 function initLocationListener() {
@@ -867,20 +867,42 @@ function initLocationListener() {
                     zIndex: 1989
                 });
 
-                playerMarkers[uid] = { marker, circle };
+                playerMarkers[uid] = { marker, circle, data };
             } else {
                 playerMarkers[uid].marker.setPosition(latLng);
                 playerMarkers[uid].circle.setCenter(latLng);
                 playerMarkers[uid].circle.setRadius(data.accuracy || 50);
-                playerMarkers[uid].marker.setLabel({ text: data.name, color: 'white', fontSize: '14px', fontWeight: 'bold' });
+                playerMarkers[uid].data = data;
             }
         }
+        updatePlayerLabels();
     });
 }
+
+function updatePlayerLabels() {
+    const now = Date.now();
+    for (let uid in playerMarkers) {
+        const p = playerMarkers[uid];
+        const ts = p.data.timestamp;
+        let timeText = "";
+        if (ts) {
+            const diffMin = Math.floor((now - ts) / 60000);
+            if (diffMin > 0) {
+                timeText = ` (${diffMin} perce)`;
+            } else {
+                timeText = " (most)";
+            }
+        }
+        p.marker.setLabel({ text: p.data.name + timeText, color: 'white', fontSize: '14px', fontWeight: 'bold' });
+    }
+}
+setInterval(updatePlayerLabels, 60000);
 
 // --- PERSISTENCE ---
 
 function saveState() {
+    const myRole = localStorage.getItem('local_role') || 'none';
+    const stateKey = 'jetLagState_' + myRole;
     const state = {
         seekerPos: (typeof seekerMarker !== 'undefined' && seekerMarker) ? { lat: seekerMarker.getPosition().lat(), lng: seekerMarker.getPosition().lng() } : null,
         radars: radarCircles.map(c => ({
@@ -897,12 +919,18 @@ function saveState() {
         districtEditing: districtEditing,
         districtStates: districtStates
     };
-    Storage.set('jetLagState', state);
+    Storage.set(stateKey, state);
 }
 
 function loadState() {
-    const state = Storage.get('jetLagState');
+    const myRole = localStorage.getItem('local_role') || 'none';
+    const stateKey = 'jetLagState_' + myRole;
+    const state = Storage.get(stateKey);
     if (!state) return;
+
+    // Töröljük a régieket (skipSave = true), hogy ne duplikálódjanak betöltéskor
+    clearRadar(true);
+    clearThermometer(true);
 
     if (state.seekerPos && typeof seekerMarker !== 'undefined' && seekerMarker) {
         seekerMarker.setPosition(state.seekerPos);
@@ -910,7 +938,7 @@ function loadState() {
 
     if (state.radars && Array.isArray(state.radars)) {
         state.radars.forEach(r => {
-            drawRadar(r.radius, new google.maps.LatLng(r.center.lat, r.center.lng), r.color);
+            drawRadar(r.radius, new google.maps.LatLng(r.center.lat, r.center.lng), r.color, true);
         });
     }
 
@@ -964,9 +992,15 @@ function loadState() {
     }
 }
 
-// initMap is called by hunyo_tabs.js
+let isMapInitialized = false;
+// initMap is called by hunyo_tabs.js or via Firebase state updates
 const originalInitMap = initMap;
 initMap = () => {
+    if (isMapInitialized) {
+        loadState(); // Ha már van térkép, csak frissítsük az állapotot!
+        return;
+    }
+    isMapInitialized = true;
     originalInitMap();
     setTimeout(loadState, 500);
 };

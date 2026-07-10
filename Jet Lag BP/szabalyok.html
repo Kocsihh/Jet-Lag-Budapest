@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,7 +78,8 @@
             font-size: 1.2rem;
         }
 
-        p, li {
+        p,
+        li {
             font-size: 1.1rem;
             color: var(--text-dim);
             margin-bottom: 12px;
@@ -113,7 +115,7 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(100, 255, 218, 0.2);
         }
-        
+
         /* Kiemelt információkhoz */
         .highlight-box {
             background: rgba(255, 204, 0, 0.1);
@@ -122,6 +124,7 @@
             border-radius: 0 8px 8px 0;
             margin-top: 20px;
         }
+
         .highlight-box p {
             color: #fff;
             margin: 0;
@@ -129,6 +132,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <a href="./index.html" class="back-btn-top">⬅ Vissza a Főmenübe</a>
@@ -140,68 +144,113 @@
 
     <div class="rule-section">
         <h2><span>1</span> Bevezetés és Az Első Kör</h2>
-        <p>Ez a <strong>Jet Lag: Budapest</strong> változata, saját paklival, inspirációt merítve a ZeneszerzőGeo csatornájáról vett videókból.</p>
-        
+        <p>Ez a <strong>Jet Lag: Budapest</strong> változata, saját paklival, inspirációt merítve a ZeneszerzőGeo
+            csatornájáról vett videókból.</p>
+
         <h3>Az Első Kör</h3>
-        <p>A Bújók kiválasztják a saját megállójukat és odautaznak. Alapvetően a megálló <strong>500m-es sugarú körében</strong> lehet elbújni, azonban nem lehet másik megállóhoz közelebb lenni, mint ahova bújtál. Ehhez a térképen implementálva van matematikailag az adott megállónak az éles határai: <strong>Ez a térképen kattintással érhető el.</strong></p>
-        <p>Miután elfoglalták a helyüket a Bújók, a Hunyók is elindulnak. A Hunyók az 1. körben onnan kezdenek, ahonnan akarnak: akár otthonról, akár egy közlekedési csomópontból.</p>
+        <p>A Bújók kiválasztják a saját megállójukat és odautaznak. Alapvetően a megálló <strong>500m-es sugarú
+                körében</strong> lehet elbújni, azonban nem lehet másik megállóhoz közelebb lenni, mint ahova bújtál.
+            Ehhez a térképen implementálva van matematikailag az adott megállónak az éles határai: <strong>Ez a térképen
+                kattintással érhető el.</strong></p>
+        <p>Miután elfoglalták a helyüket a Bújók, a Hunyók is elindulnak. A Hunyók az 1. körben onnan kezdenek, ahonnan
+            akarnak: akár otthonról, akár egy közlekedési csomópontból.</p>
     </div>
 
     <div class="rule-section">
         <h2><span>2</span> A Játék Folyása: Kérdések</h2>
         <p>A Hunyók kérdések segítségével próbálják kideríteni a Bújók pozícióját.</p>
-        
+
         <div class="highlight-box">
-            <p><strong>1. fontos információ:</strong> A kérdések végén látható pl.: <strong>(2,1)</strong> az arra utal, hogy a Bújók hány kártyát húzhatnak és ebből mennyit tarthatnak meg. Pl.: (húzz 2-t ; tartsd meg 1-et). Értelemszerűen a nagyobb kérdések több kártyát fognak adni a Bújóknak.</p>
+            <p><strong>1. fontos információ:</strong> A kérdések végén látható pl.: <strong>(2,1)</strong> az arra utal,
+                hogy a Bújók hány kártyát húzhatnak és ebből mennyit tarthatnak meg. Pl.: (húzz 2-t ; tartsd meg 1-et).
+                Értelemszerűen a nagyobb kérdések több kártyát fognak adni a Bújóknak.</p>
         </div>
 
         <p><strong>2. fontos információ: A Kategóriák:</strong></p>
 
         <h3>1. kategória: Egyeztető kérdések</h3>
         <p>Így működik: <em>Mi | x helyen vagyunk | ti is?</em><br>
-        <strong>Például:</strong> Mi Pesten vagyunk, ti is? Mi a X. kerületben vagyunk, ti is? Mi a 3-as villamos vonalán vagyunk, ti is?<br>
-        Értelemszerűen ha a bújó ott tartózkodik, igennel kell válaszolnia. Ahhoz, hogy ezeket a kérdéseket elsüsd, <strong>ott kell lenni</strong> az adott villamos vonalon. Fontos: A Kórház, mozi, mekinél nem kell bemenni az adott épületbe!</p>
-        
+            <strong>Például:</strong> Mi Pesten vagyunk, ti is? Mi a X. kerületben vagyunk, ti is? Mi a 3-as villamos
+            vonalán vagyunk, ti is?<br>
+            Értelemszerűen ha a bújó ott tartózkodik, igennel kell válaszolnia. Ahhoz, hogy ezeket a kérdéseket elsüsd,
+            <strong>ott kell lenni</strong> az adott villamos vonalon. Fontos: A Kórház, mozi, mekinél nem kell bemenni
+            az adott épületbe!
+        </p>
+
         <h3>2. kategória: Mérő kérdések</h3>
-        <p>Itt nincsen előfeltétele a kérdezésnek, bármilyen részhalmazát az adott témáknak lehet választani. Tehát mondhatom az Egressy mekit, Az Uzsoki kórházt, vagy a bécsi Mekit is. A lényeg az, hogy így kell feltenni a kérdést: <em>"Hozzánk a Keleti Cinema city 1,2 km-re van. Hozzátok közelebb / távolabb?"</em></p>
-        
+        <p>Itt nincsen előfeltétele a kérdezésnek, bármilyen részhalmazát az adott témáknak lehet választani. Tehát
+            mondhatom az Egressy mekit, Az Uzsoki kórházt, vagy a bécsi Mekit is. A lényeg az, hogy így kell feltenni a
+            kérdést: <em>"Hozzánk a Keleti Cinema city 1,2 km-re van. Hozzátok közelebb / távolabb?"</em></p>
+
         <h3>3. kategória: Radar kérdés</h3>
-        <p>A térképen a <strong>Hunyó Pint</strong> használva lehet megnézni a radar hatáskörét. Ha radart kérsz, akkor valamilyen pontos helyről kell indítanod és <strong>OTT IS KELL TARTÓZKODNOD</strong>, ahhoz hogy működjön a radar. Értelemszerűen a kérdés az, hogy: <em>"A Keleti Pályaudvar 500m-es sugarú körében benne vagytok?"</em></p>
-        
+        <p>A térképen a <strong>Hunyó Pint</strong> használva lehet megnézni a radar hatáskörét. Ha radart kérsz, akkor
+            valamilyen pontos helyről kell indítanod és <strong>OTT IS KELL TARTÓZKODNOD</strong>, ahhoz hogy működjön a
+            radar. Értelemszerűen a kérdés az, hogy: <em>"A Keleti Pályaudvar 500m-es sugarú körében benne
+                vagytok?"</em></p>
+
         <h3>4. kategória: Hőmérő</h3>
-        <p>Segítő funkció a térképen található meg. A hőmérő így működik: Be kell írni a másik csapatnak, hogy <em>"Hőmérő: 2km-es hőmérő indul a keleti pályaudvartól."</em> A hőmérő átkokkal megszakítható, ekkor azonban nem húzhatnak a bújók (Átkokról lesz szó később). Majd miután az adott távot megtettük, beírjuk, hogy <em>"Hőmérő vége Örs Vezér Tere. Melegebb / Hidegebb?"</em> Ekkor küldjük el a kérdést és ilyenkor kell válaszolnia a Bújóknak.</p>
+        <p>Segítő funkció a térképen található meg. A hőmérő így működik: Be kell írni a másik csapatnak, hogy
+            <em>"Hőmérő: 2km-es hőmérő indul a keleti pályaudvartól."</em> A hőmérő átkokkal megszakítható, ekkor
+            azonban nem húzhatnak a bújók (Átkokról lesz szó később). Majd miután az adott távot megtettük, beírjuk,
+            hogy <em>"Hőmérő vége Örs Vezér Tere. Melegebb / Hidegebb?"</em> Ekkor küldjük el a kérdést és ilyenkor kell
+            válaszolnia a Bújóknak.
+        </p>
 
         <h3>5. Fotó kérdések</h3>
         <p>Értelemszerűek, azonban a részkérdésekhez pontosítás:</p>
         <ul>
-            <li><strong>Legmagasabb épület:</strong> Amikor legmagasabb épületet kell lefotózni, akkor értendő az 500m-es rádiusz, tehát nem lehet lefotózni az Eiffel tornyot akkor sem ha jó kamerád van.</li>
-            <li><strong>Állomás fotó:</strong> Valahol az állomáson kell lőnöd fotót, nyilván ne fotózd le a táblát, de ne is egy lépcsőfokot. Itt jön be a szubjektivitás a játékba, hogy ne olyat küldj amiből egyből rájönnek, de ne olyat amiből még 1 megállót sem tudnak kizárni.</li>
+            <li><strong>Legmagasabb épület:</strong> Amikor legmagasabb épületet kell lefotózni, akkor értendő az
+                500m-es rádiusz, tehát nem lehet lefotózni az Eiffel tornyot akkor sem ha jó kamerád van. A szabály az,
+                hogy az épületnek legalább a felső 1/3-a legyen a képen.</li>
+            <li><strong>Állomás fotó:</strong> Valahol az állomáson kell lőnöd fotót, nyilván ne fotózd le a táblát, de
+                ne is egy lépcsőfokot. Itt jön be a szubjektivitás a játékba, hogy ne olyat küldj amiből egyből
+                rájönnek, de ne olyat amiből még 1 megállót sem tudnak kizárni.</li>
             <li><strong>Égbolt:</strong> LE KELL TENNI A TELEFONT A FÖLDRE, és úgy fotózni.</li>
-            <li><strong>Fa:</strong> Az egész fának benne kell lennie, minden ágával együtt, viszont lehet bármilyen fa.</li>
+            <li><strong>Fa:</strong> Az egész fának benne kell lennie, minden ágával együtt, viszont lehet bármilyen fa.
+            </li>
             <li><strong>Szelfi:</strong> Valamilyen háttérnek szerepelni kell a szelfiben.</li>
-            <li><strong>A legszélesebb út:</strong> Elég ha az út van benne, érdemes megkeresni a valóban legszélesebb utat a megállótokban.</li>
+            <li><strong>A legszélesebb út:</strong> Elég ha az út van benne, érdemes megkeresni a valóban legszélesebb
+                utat a megállótokban.</li>
         </ul>
     </div>
 
     <div class="rule-section">
         <h2><span>3</span> A Pakli és Bújók feladata</h2>
-        <p>Ahogy beszéltük, a Bújók tudnak húzni valamennyi kártyát minden kérdés után. Vannak különböző kártyafajták:</p>
+        <p>Ahogy beszéltük, a Bújók tudnak húzni valamennyi kártyát minden kérdés után. Vannak különböző kártyafajták:
+        </p>
         <ul>
-            <li><strong>Időkártya:</strong> Egyszerű, a játékidőhöz hozzáadódik a kártyán szereplő idő, ezzel mesterségesen növelve a megtalálási időt.</li>
-            <li><strong>Vétó:</strong> A kérdést nem kell megválaszolni, de a Hunyók újra feltehetik, csak 2x-es időbüntetéssel.</li>
-            <li><strong>Szupervétó:</strong> A kérdést nem kell megválaszolni és a Hunyók nem tehetik fel újra a kérdést.</li>
-            <li><strong>Átok kártyák:</strong> Az átok kártyák legtöbb esetben úgy játszhatók ki, hogy egy másik kártyát feláldozol érte. A funkciójuk: A Hunyók lelassítása idegesítő dolgokkal :).</li>
+            <li><strong>Időkártya:</strong> Egyszerű, a játékidőhöz hozzáadódik a kártyán szereplő idő, ezzel
+                mesterségesen növelve a megtalálási időt.</li>
+            <li><strong>Vétó:</strong> A kérdést nem kell megválaszolni, de a Hunyók újra feltehetik, csak 2x-es
+                időbüntetéssel.</li>
+            <li><strong>Szupervétó:</strong> A kérdést nem kell megválaszolni és a Hunyók nem tehetik fel újra a
+                kérdést.</li>
+            <li><strong>Átok kártyák:</strong> Az átok kártyák legtöbb esetben úgy játszhatók ki, hogy egy másik kártyát
+                feláldozol érte. A funkciójuk: A Hunyók lelassítása idegesítő dolgokkal :c.</li>
         </ul>
     </div>
 
     <div class="rule-section">
         <h2><span>4</span> Endgame (Végjáték)</h2>
-        <p>Ha a Hunyók leszállnak abban a megállóban ahol a bújók bújnak, elkezdődik az endgame. Ekkor a bújók nem mozoghatnak. Ha olyan kérdést tesznek fel amit lehetetlen megválaszolni a mozgáskorlátozás miatt, akkor nyilván nem kell megválaszolni a kérdést. A játék addig tart, míg a hunyók meg nem találják a bújókat. Ekkor véget ér az első kör.</p>
-        
+        <p>Ha a Hunyók leszállnak abban a megállóban ahol a bújók bújnak, elkezdődik az endgame. Ekkor a bújók nem
+            mozoghatnak. Ha olyan kérdést tesznek fel amit lehetetlen megválaszolni a mozgáskorlátozás miatt, akkor
+            nyilván nem kell megválaszolni a kérdést. A játék addig tart, míg a hunyók meg nem találják a bújókat. Ekkor
+            véget ér az első kör.</p>
+
         <h3>A második és a többi kör:</h3>
-        <p>Itt csak az változik, hogy <strong>az előző Bújóknak az állomásától kell indítani a keresést a Hunyóknak a következő körben</strong>. Az nyeri a játékot, akinek az összideje kevesebb a második kör után.</p>
+        <p>Itt csak az változik, hogy <strong>az előző Bújóknak az állomásától kell indítani a keresést a Hunyóknak a
+                következő körben</strong>. Az nyeri a játékot, akinek az összideje kevesebb a második kör után.</p>
+    </div>
+
+    <div class="rule-section">
+        <h2><span>5</span> Keresési szabályok</h2>
+        <p>Az Internetet lehet keresésre használni, például magas templomok Budapesten</p>
+        <p><strong>Amit nem lehet:</strong></p>
+        <p>Semmilyen AI alapú ágenset használni a képek elemzésére</p>
+        <p>A Google Street View-t nem lehet használni (pls menjetek el nézzétek meg magatok :D )</p>
     </div>
 
     <br><br>
 </body>
+
 </html>

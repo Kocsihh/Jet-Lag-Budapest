@@ -307,10 +307,18 @@ function askQuestion(qName, baseMinutes, isPhoto = false, reward = "", drawCount
         return;
     }
 
+    // Aktív feladatalapú átok ellenőrzése
+    const activeCurses = Storage.get('jetLag_activeEffects', []);
+    const blockingCurse = activeCurses.find(c => c.tipus === 'Átok' && !c.duration);
+    if (blockingCurse) {
+        showToast(`Nem kérdezhetsz! Előbb teljesítsétek ezt: ${blockingCurse.nev}`, "error", 4000);
+        return;
+    }
+
     const vCount = vetoedQuestions[qName] || 0;
     const actualMinutes = baseMinutes * Math.pow(2, vCount);
 
-    // Firebase-re írjuk a felteőtt kérdést, hogy a bújók is lássák
+    // Firebase-re írjuk a feltétt kérdést, hogy a bújók is lássák
     Storage.set('jetLag_pendingQuestion', {
         qName,
         minutes: actualMinutes,
@@ -321,7 +329,7 @@ function askQuestion(qName, baseMinutes, isPhoto = false, reward = "", drawCount
         keepCount
     });
 
-    // Kiszsámláló banner megmutatása
+    // Kiszámláló banner megmutatása
     renderHunyoPendingBanner();
     showToast(`❓ Kérdés elküldve: "${qName}" – Várakozás a bújóktól...`, 'info', 4000);
 }
