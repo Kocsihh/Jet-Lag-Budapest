@@ -749,7 +749,6 @@ function placeMyLocationMarker(pos) {
 
     if (roomId && myUserId && typeof db !== 'undefined') {
         const locRef = db.ref(`rooms/${roomId}/locations/${myUserId}`);
-        locRef.onDisconnect().remove();
         locRef.set({
             lat: latLng.lat,
             lng: latLng.lng,
@@ -879,14 +878,34 @@ function initLocationListener() {
     });
 }
 
+const PLAYER_TIMEOUT_MS = 15 * 60 * 1000; // 15 perc inaktivitás után eltűnik
+
 function updatePlayerLabels() {
     const now = Date.now();
+    const roomId = localStorage.getItem('local_roomId');
     for (let uid in playerMarkers) {
         const p = playerMarkers[uid];
         const ts = p.data.timestamp;
         let timeText = "";
+        
         if (ts) {
-            const diffMin = Math.floor((now - ts) / 60000);
+            const diffMs = now - ts;
+            
+            // Timeout és aktív takarítás
+            if (diffMs > PLAYER_TIMEOUT_MS) {
+                console.log(`[Takarítás] ${p.data.name} inaktív túl régóta, eltávolítjuk.`);
+                p.marker.setMap(null);
+                p.circle.setMap(null);
+                delete playerMarkers[uid];
+                
+                // Törlés a Firebase-ből is, hogy másoknál is eltűnjön
+                if (roomId && typeof db !== 'undefined') {
+                    db.ref(`rooms/${roomId}/locations/${uid}`).remove().catch(e => console.warn(e));
+                }
+                continue;
+            }
+            
+            const diffMin = Math.floor(diffMs / 60000);
             if (diffMin > 0) {
                 timeText = ` (${diffMin} perce)`;
             } else {

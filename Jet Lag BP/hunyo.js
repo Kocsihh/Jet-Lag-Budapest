@@ -17,22 +17,22 @@ async function initFirebaseHunyo() {
         window.location.href = './index.html';
         return;
     }
-    
+
     await Storage.init(roomId, () => {
         gameActive = Storage.get('jetLag_gameActive', false);
         exhaustedQuestions = Storage.get('jetLag_exhausted', []);
         vetoedQuestions = Storage.get('jetLag_vetoed', {});
         logEntries = Storage.get('jetLag_log', []);
-        
+
         initHunyo();
         if (typeof initMap === 'function') initMap();
-        
+
         // Átok tab szinkronizáció - minden Firebase frissítésnél fut
         renderHunyoCurses();
         // Folyamatban lévő kérdés banner frissítése
         renderHunyoPendingBanner();
     });
-    
+
     // Restore last active tab
     if (typeof switchHunyoTab === 'function') {
         const lastTab = Storage.get('local_hunyoTab', 'questions'); // using local for tab state
@@ -46,7 +46,7 @@ async function startGame() {
         gameActive = true;
         exhaustedQuestions = [];
         vetoedQuestions = {};
-        
+
         const updates = {
             'jetLag_gameActive': true,
             'jetLag_exhausted': [],
@@ -56,7 +56,7 @@ async function startGame() {
         const nowMs = Date.now();
         stopwatchElapsed = 0;
         stopwatchStartTime = nowMs;
-        
+
         if (stopwatchInterval) clearInterval(stopwatchInterval);
         renderStopwatch();
         stopwatchInterval = setInterval(renderStopwatch, 1000);
@@ -79,20 +79,20 @@ async function endGame() {
         gameActive = false;
         exhaustedQuestions = [];
         vetoedQuestions = {};
-        
+
         const updates = {
             'jetLag_gameActive': false,
             'jetLag_exhausted': [],
             'jetLag_vetoed': {}
         };
-        
+
         // Várakozási timer leállítása (csak lokálisan, Firebase-be az updates-en keresztül megy)
         clearInterval(countdown);
         countdown = null;
         currentTimerEnd = null;
         document.getElementById('timer-container').style.display = 'none';
         document.getElementById('main-grid').classList.remove('disabled');
-        
+
         updates['jetLag_timerEnd'] = null;
         updates['jetLag_timerLabel'] = null;
 
@@ -104,7 +104,7 @@ async function endGame() {
         stopwatchElapsed = 0;
         stopwatchStartTime = null;
         renderStopwatch();
-        
+
         updates['jetLag_swElapsed'] = null;
         updates['jetLag_swStart'] = null;
 
@@ -113,7 +113,7 @@ async function endGame() {
         updates['jetLag_log'] = logEntries;
 
         Storage.update(updates);
-        
+
         const roomId = localStorage.getItem('local_roomId');
         if (roomId && typeof db !== 'undefined') {
             db.ref('rooms/' + roomId + '/status').set('lobby');
@@ -163,9 +163,9 @@ function renderStopwatch() {
     const m = Math.floor((total % 3600) / 60);
     const s = total % 60;
     if (h > 0) {
-        el.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        el.innerText = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     } else {
-        el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        el.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 }
 
@@ -216,8 +216,8 @@ async function caughtHider() {
         const h = Math.floor(sec / 3600);
         const m = Math.floor((sec % 3600) / 60);
         const s = sec % 60;
-        if (h > 0) return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
     const bonusText = bonusCards.length > 0
@@ -270,7 +270,7 @@ function updateUI() {
     buttons.forEach(btn => {
         const onClickAttr = btn.getAttribute('onclick');
         if (!onClickAttr) return;
-        
+
         const qMatch = onClickAttr.match(/askQuestion\('([^']+)',\s*(\d+)/);
         if (qMatch) {
             const qName = qMatch[1];
@@ -315,6 +315,9 @@ function askQuestion(qName, baseMinutes, isPhoto = false, reward = "", drawCount
         return;
     }
 
+    // Opcionális megjegyzés bekérése
+    const note = prompt(`Megjegyzés a kérdéshez (pl. M3, Budai oldal):`, '') || '';
+
     const vCount = vetoedQuestions[qName] || 0;
     const actualMinutes = baseMinutes * Math.pow(2, vCount);
 
@@ -326,7 +329,8 @@ function askQuestion(qName, baseMinutes, isPhoto = false, reward = "", drawCount
         vetoedCount: vCount,
         startTime: Date.now(),
         drawCount,
-        keepCount
+        keepCount,
+        note
     });
 
     // Kiszámláló banner megmutatása
@@ -346,12 +350,14 @@ function renderHunyoPendingBanner() {
     }
 
     const vetoLabel = pq.vetoedCount > 0 ? ` (Vétózva x${pq.vetoedCount})` : '';
+    const noteHtml = pq.note ? `<span class="pending-q-note">💡 ${pq.note}</span>` : '';
     banner.style.display = 'block';
     banner.innerHTML = `
         <div class="pending-q-banner">
             <span class="pending-q-pulse"></span>
             <span class="pending-q-label">❓ Aktív kérdés</span>
             <span class="pending-q-name">${pq.qName}${vetoLabel}</span>
+            ${noteHtml}
             <span class="pending-q-wait">Várakozás a bújóktól...</span>
         </div>`;
 }
@@ -365,7 +371,7 @@ function addLogEntry(time, text) {
 function renderLog() {
     const logContent = document.getElementById('log-content');
     logContent.innerHTML = '';
-    
+
     logEntries.forEach(entry => {
         const div = document.createElement('div');
         div.className = 'log-entry';
@@ -427,10 +433,10 @@ function startTimer(labelText, endTimeOverride = null) {
                         osc.start(ctx.currentTime + start);
                         osc.stop(ctx.currentTime + start + dur);
                     };
-                    playBeep(880, 0,    0.15);
-                    playBeep(880, 0.2,  0.15);
+                    playBeep(880, 0, 0.15);
+                    playBeep(880, 0.2, 0.15);
                     playBeep(1100, 0.4, 0.3);
-                } catch(e) { /* hangjelzés nem elérhető */ }
+                } catch (e) { /* hangjelzés nem elérhető */ }
             }
         }
     };
@@ -445,7 +451,7 @@ function stopTimer() {
     currentTimerEnd = null;
     document.getElementById('timer-container').style.display = 'none';
     document.getElementById('main-grid').classList.remove('disabled');
-    
+
     // Töröljük a Firebase-ből
     Storage.remove('jetLag_timerEnd');
     Storage.remove('jetLag_timerLabel');
@@ -532,7 +538,7 @@ function initHunyo() {
             document.getElementById('timer-container').style.display = 'none';
             document.getElementById('main-grid').classList.remove('disabled');
         }
-        
+
         // Ha lejárt timer maradt bent a Firebase-ben, takarítsuk ki
         if (endTime && endTime <= Date.now()) {
             Storage.remove('jetLag_timerEnd');
@@ -561,7 +567,7 @@ function renderHunyoCurses() {
     const effects = Storage.get('jetLag_activeEffects', []);
     const list = document.getElementById('curses-list');
     if (!list) return;
-    
+
     // Badge frissítése a tab-on
     const badge = document.getElementById('curse-badge');
     if (badge) {
@@ -626,13 +632,13 @@ function renderHunyoCurses() {
 function dismissCurseFromHunyo(index) {
     let effects = Storage.get('jetLag_activeEffects', []);
     if (index < 0 || index >= effects.length) return;
-    
+
     const curseName = effects[index].nev;
     effects.splice(index, 1);
-    
+
     // Firebase-re írjuk vissza a módosított listát
     Storage.set('jetLag_activeEffects', effects);
-    
+
     showToast(`✅ "${curseName}" átok teljesítve!`, 'success', 3000);
     renderHunyoCurses();
 }
