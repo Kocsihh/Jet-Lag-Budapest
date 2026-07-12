@@ -316,7 +316,7 @@ function askQuestion(qName, baseMinutes, isPhoto = false, reward = "", drawCount
     }
 
     // Opcionális megjegyzés bekérése
-    const note = prompt(`Megjegyzés a kérdéshez (pl. M3, Budai oldal):`, '') || '';
+    const note = (prompt(`Megjegyzés a kérdéshez (pl. M3, Budai oldal):`, '') || '').slice(0, 150);
 
     const vCount = vetoedQuestions[qName] || 0;
     const actualMinutes = baseMinutes * Math.pow(2, vCount);

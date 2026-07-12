@@ -9,27 +9,22 @@ let inventory = [];
 let drawnPool = [];
 let activeEffects = [];
 
-let allowedDraw = null;
-let remainingKeepCount = 0;
-
 async function initFirebaseDeck() {
     const roomId = localStorage.getItem('local_roomId');
     if (!roomId) {
         window.location.href = './index.html';
         return;
     }
-    
+
     await Storage.init(roomId, () => {
-        currentDeck    = Storage.get('jetLag_deck', [...ORIGINAL_DECK]);
-        inventory      = Storage.get('jetLag_inventory', []);
-        drawnPool      = Storage.get('jetLag_drawnPool', []);
-        activeEffects  = Storage.get('jetLag_activeEffects', []);
-        allowedDraw    = Storage.get('jetLag_allowedDraw', null);
-        remainingKeepCount = Storage.get('jetLag_remainingKeepCount', 0);
-        
+        currentDeck = Storage.get('jetLag_deck', [...ORIGINAL_DECK]);
+        inventory = Storage.get('jetLag_inventory', []);
+        drawnPool = Storage.get('jetLag_drawnPool', []);
+        activeEffects = Storage.get('jetLag_activeEffects', []);
+
         // Inicializáljuk a térképet, ha van
         if (typeof initMap === 'function') initMap();
-        
+
         // Refresh UI
         initDeck();
 
@@ -40,8 +35,8 @@ async function initFirebaseDeck() {
 window.addEventListener('load', initFirebaseDeck);
 
 // Fizetési folyamat állapota
-let isPaying          = false;
-let targetIndex       = -1;
+let isPaying = false;
+let targetIndex = -1;
 let selectedForDiscard = [];
 
 // --- SEGÉDFÜGGVÉNYEK ---
@@ -51,19 +46,11 @@ function getCardClass(tipus) {
     return CARD_TYPES[tipus]?.cssClass ?? 'type-ido';
 }
 
-/** Dinamikus húzó gombok renderelése. */
-function renderDrawControls() {
-    const controls = document.getElementById('dynamic-draw-controls');
-    if (!controls) return;
-    
-    let html = '';
-    if (allowedDraw && allowedDraw.drawCount > 0 && drawnPool.length === 0) {
-        const disabledAttr = isPaying ? 'disabled' : '';
-        html = `<button id="btn-dynamic-draw" onclick="drawChoice()" ${disabledAttr}>Húzz ${allowedDraw.drawCount} (tarts meg ${allowedDraw.keepCount}-t)</button>`;
-    }
-    
-    html += `<button class="btn-reset" onclick="resetDeck()">Reset</button>`;
-    controls.innerHTML = html;
+/** Húzó gombok (btn1/btn2/btn3) engedélyezése vagy tiltása. */
+function setDrawButtons(disabled) {
+    document.getElementById('btn1').disabled = disabled;
+    document.getElementById('btn2').disabled = disabled;
+    document.getElementById('btn3').disabled = disabled;
 }
 
 // --- PERZISZTENCIA ---
@@ -73,9 +60,7 @@ function saveDeckState() {
         'jetLag_deck': currentDeck,
         'jetLag_inventory': inventory,
         'jetLag_drawnPool': drawnPool,
-        'jetLag_activeEffects': activeEffects,
-        'jetLag_allowedDraw': allowedDraw,
-        'jetLag_remainingKeepCount': remainingKeepCount
+        'jetLag_activeEffects': activeEffects
     });
 }
 
@@ -89,14 +74,12 @@ function updateStats() {
 async function resetDeck() {
     if (!(await customConfirm('Biztosan újraindítod a paklit?<br>Minden kártya visszakerül, az inventory törlődik és az aktív hatások megszűnnek.'))) return;
 
-    currentDeck   = [...ORIGINAL_DECK];
-    inventory     = [];
-    drawnPool     = [];
+    currentDeck = [...ORIGINAL_DECK];
+    inventory = [];
+    drawnPool = [];
     activeEffects = [];
-    allowedDraw   = null;
-    remainingKeepCount = 0;
-    isPaying          = false;
-    targetIndex       = -1;
+    isPaying = false;
+    targetIndex = -1;
     selectedForDiscard = [];
 
     saveDeckState();
@@ -104,24 +87,18 @@ async function resetDeck() {
     renderInventory();
     renderActiveEffects();
     document.getElementById('selection-area').innerHTML = '';
-    renderDrawControls();
+    setDrawButtons(false);
     updateStatus('');
 }
 
-function drawChoice() {
+function drawChoice(count) {
     if (isPaying) return;
-    if (!allowedDraw || allowedDraw.drawCount <= 0) return;
-    
-    const count = allowedDraw.drawCount;
     if (currentDeck.length < count) {
         showToast('A pakli kiürült! Újrakeverés...', 'warning');
         currentDeck = [...ORIGINAL_DECK];
     }
 
-    remainingKeepCount = allowedDraw.keepCount;
-    allowedDraw = null;
-    
-    renderDrawControls();
+    setDrawButtons(true);
     drawnPool = [];
     document.getElementById('selection-area').innerHTML = '';
 
@@ -166,8 +143,8 @@ function renderInventory() {
         const cardEl = document.createElement('div');
         cardEl.className = `card inventory-card ${getCardClass(card.tipus)}`;
 
-        if (isPaying && index === targetIndex)        cardEl.classList.add('paying');
-        if (selectedForDiscard.includes(index))       cardEl.classList.add('selected-to-discard');
+        if (isPaying && index === targetIndex) cardEl.classList.add('paying');
+        if (selectedForDiscard.includes(index)) cardEl.classList.add('selected-to-discard');
 
         const canPlayDirectly = card.tipus !== 'Idő' && card.cost === 0;
         const playBtn = canPlayDirectly
@@ -254,20 +231,12 @@ function updateActiveTimers() {
 // --- KÁRTYA KIJÁTSZÁS & FIZETÉS ---
 
 function keepCard(idx) {
-    inventory.push(drawnPool.splice(idx, 1)[0]);
-    remainingKeepCount--;
-    
-    if (remainingKeepCount > 0 && drawnPool.length > 0) {
-        saveDeckState();
-        renderDrawnPool();
-    } else {
-        drawnPool = [];
-        remainingKeepCount = 0;
-        document.getElementById('selection-area').innerHTML = '';
-        saveDeckState();
-        renderDrawControls();
-        renderInventory();
-    }
+    inventory.push(drawnPool[idx]);
+    drawnPool = [];
+    saveDeckState();
+    document.getElementById('selection-area').innerHTML = '';
+    setDrawButtons(false);
+    renderInventory();
 }
 
 function handleInventoryClick(index) {
@@ -304,22 +273,20 @@ function startUsage(index) {
         showToast('Nincs elég kártyád az inventory-ban a költség kifizetéséhez!', 'error');
         return;
     }
-    isPaying          = true;
-    targetIndex       = index;
+    isPaying = true;
+    targetIndex = index;
     selectedForDiscard = [];
     updateStatus(`FIZETÉS: Válassz ${card.cost} lapot az eldobáshoz!`);
     renderInventory();
-    renderDrawControls();
 }
 
 function handleDiscardSelection(index) {
     if (index === targetIndex) {
-        isPaying          = false;
-        targetIndex       = -1;
+        isPaying = false;
+        targetIndex = -1;
         selectedForDiscard = [];
         updateStatus('');
         renderInventory();
-        renderDrawControls();
         return;
     }
 
@@ -339,12 +306,11 @@ function handleDiscardSelection(index) {
 async function finalizeUsage() {
     const targetCard = inventory[targetIndex];
     if (!(await customConfirm(`Kifizeted a költséget és használod: <strong>${targetCard.nev}</strong>?`))) {
-        isPaying          = false;
-        targetIndex       = -1;
+        isPaying = false;
+        targetIndex = -1;
         selectedForDiscard = [];
         updateStatus('');
         renderInventory();
-        renderDrawControls();
         return;
     }
 
@@ -356,20 +322,19 @@ async function finalizeUsage() {
     activateCardEffect(targetCard);
     saveDeckState();
 
-    isPaying          = false;
-    targetIndex       = -1;
+    isPaying = false;
+    targetIndex = -1;
     selectedForDiscard = [];
     updateStatus('');
     renderInventory();
     renderActiveEffects();
-    renderDrawControls();
 }
 
 // --- STÁTUSZSOR ---
 
 function updateStatus(msg) {
     const bar = document.getElementById('status-bar');
-    bar.innerText  = msg;
+    bar.innerText = msg;
     bar.style.display = msg ? 'block' : 'none';
 }
 
@@ -380,12 +345,13 @@ function initDeck() {
     renderInventory();
     renderActiveEffects();
     updateStats();
-    
-    // Kezdeti gomb állapot
-    renderDrawControls();
-    
+
+    // Kezdeti gomb állapot: csak akkor tilos, ha már épp fizetünk
+    setDrawButtons(isPaying);
+
     if (drawnPool.length > 0) {
         renderDrawnPool();
+        setDrawButtons(true);
     } else {
         document.getElementById('selection-area').innerHTML = '';
     }
@@ -442,10 +408,9 @@ function renderPendingQuestion() {
             <div class="question-name">${pq.qName}</div>
             ${vetoLabel ? `<div class="question-vetoed-tag">🔄 ${vetoLabel}</div>` : ''}
             ${pq.isPhoto ? '<div class="question-photo-tag">📸 Fotó kérdés (10 perc)</div>' : ''}
-            ${pq.note ? `<div class="question-note">💡 <em>${pq.note}</em></div>` : ''}
             ${(pq.drawCount > 0 || pq.keepCount > 0) ? `
             <div class="question-card-reward">
-                🃏 Húzz <strong>${pq.drawCount}</strong>-t, tartsd meg a legjobb <strong>${pq.keepCount}</strong>-t
+                🃏 Húzz <strong>${pq.drawCount}</strong> kártyát, tartsd meg <strong>${pq.keepCount}-et</strong>
             </div>` : ''}
             <div class="question-timer-wrap">
                 <div class="question-timer-label">Válaszolni kell</div>
@@ -466,7 +431,7 @@ function renderPendingQuestion() {
         const rem = Math.max(0, deadlineMs - Date.now());
         const m = Math.floor(rem / 60000);
         const s = Math.floor((rem % 60000) / 1000);
-        el.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        el.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         el.classList.toggle('timer-urgent', rem < 60000 && rem > 0);
         el.classList.toggle('timer-expired', rem === 0);
     };
@@ -488,14 +453,11 @@ function handleBujoOutcome(type) {
     let logEntries = Storage.get('jetLag_log', []);
 
     let shouldStartTimer = true;
-    let logMsg = qName + (pq.note ? ` [${pq.note}]` : '');
+    let logMsg = qName;
 
     if (type === 'answered') {
         logMsg += ' (Válaszolt)';
         exhaustedQ.push(qName);
-        if (pq.drawCount > 0) {
-            allowedDraw = { drawCount: pq.drawCount, keepCount: pq.keepCount };
-        }
     } else if (type === 'veto') {
         logMsg += ' (Vétó)';
         shouldStartTimer = false;
@@ -522,8 +484,7 @@ function handleBujoOutcome(type) {
         'jetLag_exhausted': exhaustedQ,
         'jetLag_vetoed': vetoedQ,
         'jetLag_log': logEntries,
-        'jetLag_inventory': inventory,
-        'jetLag_allowedDraw': allowedDraw
+        'jetLag_inventory': inventory
     };
 
     if (shouldStartTimer) {
@@ -538,10 +499,9 @@ function handleBujoOutcome(type) {
     Storage.remove('jetLag_pendingQuestion');
 
     showToast(type === 'answered' ? '✅ Válasz rögzítve! Timer indul a hunyóknál.' : (type === 'veto' ? '❌ Vétó eljátszva!' : '☢️ Szuper-Vétó eljátszva!'), 'success', 3500);
-    
+
     // Helyi UI frissítés (a Storage callback is le fog futni, de az aszinkron)
     renderPendingQuestion();
     renderInventory();
-    renderDrawControls();
     saveDeckState();
 }
