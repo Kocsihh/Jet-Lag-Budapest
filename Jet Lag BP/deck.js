@@ -34,9 +34,37 @@ async function initFirebaseDeck() {
 
         // Kérdés tab szinkronizáció - minden Firebase frissítésnél fut
         renderPendingQuestion();
+
+        // Ellenőrizzük, hogy véget ért-e a játék
+        const gameActive = Storage.get('gameActive', true);
+        if (gameActive === false) {
+            const modal = document.getElementById('game-over-modal');
+            if (modal && modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        // Ha még nincs célállomás beírva, kérjük be egyszer az első bújótól
+        const meta = Storage.get('jetLag_metadata', null);
+        if (!meta || !meta.hiderEnd) {
+            const metaModal = document.getElementById('meta-modal-deck');
+            if (metaModal) metaModal.style.display = 'flex';
+        }
     });
 }
 window.addEventListener('load', initFirebaseDeck);
+
+function saveDeckMeta() {
+    const hiderEnd = document.getElementById('meta-hider-end').value.trim();
+    if (!hiderEnd) {
+        showToast('Kérlek adj meg egy célállomást!', 'error');
+        return;
+    }
+    const existing = Storage.get('jetLag_metadata', {});
+    Storage.set('jetLag_metadata', { ...existing, hiderEnd });
+    document.getElementById('meta-modal-deck').style.display = 'none';
+    showToast('Célállomás elmentve!', 'success');
+}
 
 // Fizetési folyamat állapota
 let isPaying = false;

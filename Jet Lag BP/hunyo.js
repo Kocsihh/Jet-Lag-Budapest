@@ -31,6 +31,13 @@ async function initFirebaseHunyo() {
         renderHunyoCurses();
         // Folyamatban lévő kérdés banner frissítése
         renderHunyoPendingBanner();
+
+        // Ha még nincs indulóhely beírva, kérjük be egyszer az első hunyótól
+        const meta = Storage.get('jetLag_metadata', null);
+        if (!meta || !meta.seekerStart) {
+            const modal = document.getElementById('meta-modal');
+            if (modal) modal.style.display = 'flex';
+        }
     });
 
     // Restore last active tab
@@ -40,6 +47,18 @@ async function initFirebaseHunyo() {
     }
 }
 window.addEventListener('load', initFirebaseHunyo);
+
+function saveHunyoMeta() {
+    const seekerStart = document.getElementById('meta-seeker-start').value.trim();
+    if (!seekerStart) {
+        showToast('Kérlek adj meg egy indulási állomást!', 'error');
+        return;
+    }
+    const existing = Storage.get('jetLag_metadata', {});
+    Storage.set('jetLag_metadata', { ...existing, seekerStart });
+    document.getElementById('meta-modal').style.display = 'none';
+    showToast('Indulási állomás elmentve!', 'success');
+}
 
 async function startGame() {
     if (await customConfirm("Készen állsz az indulásra?<br>A kérdések el fognak fogyni a játék során!", "Indítás", "Mégsem")) {
@@ -182,9 +201,11 @@ async function caughtHider() {
     let totalBonusSec = 0;
     let bonusCards = [];
 
-    // Csak az inventoryban lévő Idő-kártyák számítanak (a feladott/eldobott NEM)
-    const snap = await db.ref(`rooms/${roomId}/gameState`).once('value');
-    const gs = snap.val() || {};
+    // Módosítottuk, hogy a teljes szobát lekérje (players és gameState miatt)
+    const roomSnap = await db.ref(`rooms/${roomId}`).once('value');
+    const roomData = roomSnap.val() || {};
+    const gs = roomData.gameState || {};
+    const players = roomData.players || {};
     const inventory = gs.jetLag_inventory || [];
 
     inventory.forEach(card => {
@@ -222,7 +243,7 @@ async function caughtHider() {
 
     const bonusText = bonusCards.length > 0
         ? `<div class="caught-bonus"><b>Idő-bónuszok:</b><br>${bonusCards.map(c => `• ${c}`).join('<br>')}<br><b>+${fmtTime(totalBonusSec)} bónusz</b></div>`
-        : '<div class="caught-bonus">Nem volt idő-kártya huzva.</div>';
+        : '<div class="caught-bonus">Nem volt idő-kártya húzva.</div>';
 
     const html = `
         <div class="caught-result">
@@ -241,6 +262,43 @@ async function caughtHider() {
 
     addLogEntry(new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), `--- ELKAPTUK! Végző idő: ${fmtTime(finalSec)} ---`);
     saveState();
+
+    // ======= LEADERBOARD MENTÉS ÉS JÁTÉK LEÁLLÍTÁSA =======
+    
+    // Szereplők összegyűjtése
+    let hiders = [];
+    let seekers = [];
+    for (let pId in players) {
+        if (players[pId].role === 'hider') hiders.push(players[pId].name);
+        if (players[pId].role === 'seeker') seekers.push(players[pId].name);
+    }
+
+    // Statisztikák
+    const exhaustedCount = gs.jetLag_exhausted ? gs.jetLag_exhausted.length : 0;
+    const vetoedCount = gs.jetLag_vetoed ? gs.jetLag_vetoed.length : 0;
+    const cardsInInventory = inventory.length;
+
+    // Játék leállítása a Firebase-ben
+    await db.ref(`rooms/${roomId}/gameState/gameActive`).set(false);
+    await db.ref(`rooms/${roomId}/status`).set('ended');
+
+    // Mentsük az eredménytáblába
+    await db.ref('leaderboard').push({
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        roomId: roomId,
+        hiders: hiders,
+        seekers: seekers,
+        seekerStart: (gs.metadata && gs.metadata.seekerStart) || 'Ismeretlen',
+        hiderEnd: (gs.metadata && gs.metadata.hiderEnd) || 'Ismeretlen',
+        elapsedSec: elapsedSec,
+        totalBonusSec: totalBonusSec,
+        finalSec: finalSec,
+        stats: {
+            questionsAnswered: exhaustedCount,
+            questionsVetoed: vetoedCount,
+            cardsKept: cardsInInventory
+        }
+    });
 }
 
 function closeCaughtModal() {
