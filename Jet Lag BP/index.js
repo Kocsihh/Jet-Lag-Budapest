@@ -265,19 +265,20 @@ if (typeof db !== 'undefined') {
         if (!rooms) return;
 
         const now = Date.now();
-        const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+        const OFFLINE_GRACE = 10 * 60 * 1000;
 
         for (const roomId in rooms) {
             const room = rooms[roomId];
-            const isEmpty = !room.players || Object.keys(room.players).length === 0;
+            const players = room.players || {};
+            const playerList = Object.values(players);
 
-            if (isEmpty) {
-                const isOld = room.startedAt && (now - room.startedAt > TWELVE_HOURS);
+            const hasNoPlayers = playerList.length === 0;
+            const allOfflineAndStale = playerList.length > 0 && playerList.every(p =>
+                p.isOffline && p.lastDisconnect && (now - p.lastDisconnect > OFFLINE_GRACE)
+            );
 
-                // Töröljük, ha üres ÉS (nem indult el MÉG a játék VAGY már nagyon régi)
-                if (room.status !== 'playing' || isOld) {
-                    db.ref('rooms/' + roomId).remove();
-                }
+            if (hasNoPlayers || allOfflineAndStale) {
+                db.ref('rooms/' + roomId).remove();
             }
         }
     }).catch(e => console.error("Cleanup error:", e));
