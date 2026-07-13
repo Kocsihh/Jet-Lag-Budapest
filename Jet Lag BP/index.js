@@ -114,9 +114,16 @@ function enterLobby(roomId, name) {
                 window.location.href = './hunyo.html';
             } else {
                 showToast("A játék már fut! Válassz egy szerepet a csatlakozáshoz.", "info", 5000);
+                // fel kéne dobni egy ablakot ahol választhat
             }
         }
     });
+}
+// New function for security against HTML insert
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 function updateLobbyUI(players) {
@@ -126,18 +133,15 @@ function updateLobbyUI(players) {
     listEl.innerHTML = '';
 
     Object.values(players).forEach(p => {
-        if (p.role === 'hider') hiderCount++;
-        if (p.role === 'seeker') seekerCount++;
-
         let roleIcon = "👀 Nincs szerepe";
         let roleClass = "";
-        if (p.role === 'hider') { roleIcon = "🏃 Bújó"; roleClass = "player-hider"; }
-        if (p.role === 'seeker') { roleIcon = "🕵️ Hunyó"; roleClass = "player-seeker"; }
+        if (p.role === 'hider') { roleIcon = "🏃 Bújó"; roleClass = "player-hider"; hiderCount++; }
+        if (p.role === 'seeker') { roleIcon = "🕵️ Hunyó"; roleClass = "player-seeker"; seekerCount++; }
 
-        let offlineIndicator = p.isOffline ? ' <span style="color:red; font-size:0.8em">(Offline)</span>' : '';
-
+        let offlineIndicator = p.isOffline ? ' <span style="color:red; font-size:0.8em">(Offline)</span>' : ''; 
+        
         listEl.innerHTML += `<div class="player-item ${roleClass}">
-            <strong>${p.name}</strong> ${p.isHost ? '(Host)' : ''} - ${roleIcon}${offlineIndicator}
+        <strong>${escapeHtml(p.name)}</strong> ${p.isHost ? '(Host)' : ''} - ${roleIcon}${offlineIndicator} 
         </div>`;
     });
 
