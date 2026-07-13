@@ -138,8 +138,8 @@ function updateLobbyUI(players) {
         if (p.role === 'hider') { roleIcon = "🏃 Bújó"; roleClass = "player-hider"; hiderCount++; }
         if (p.role === 'seeker') { roleIcon = "🕵️ Hunyó"; roleClass = "player-seeker"; seekerCount++; }
 
-        let offlineIndicator = p.isOffline ? ' <span style="color:red; font-size:0.8em">(Offline)</span>' : ''; 
-        
+        let offlineIndicator = p.isOffline ? ' <span style="color:red; font-size:0.8em">(Offline)</span>' : '';
+
         listEl.innerHTML += `<div class="player-item ${roleClass}">
         <strong>${escapeHtml(p.name)}</strong> ${p.isHost ? '(Host)' : ''} - ${roleIcon}${offlineIndicator} 
         </div>`;
@@ -226,9 +226,37 @@ function startGame() {
     });
 }
 
+async function TryAutoResume() {
+    const savedName = localStorage.getItem('local_playerName');
+    const savedRoom = localStorage.getItem('local_roomId');
 
-const savedName = localStorage.getItem('local_playerName');
-if (savedName) document.getElementById('playerName').value = savedName;
+    if (savedName) {
+        document.getElementById('playerName').value = savedName;
+    }
+    if (!savedName || !savedRoom) {
+        console.log("Nincs elegendő adat az auto resume-hoz.")
+        return;
+    }
+    try {
+        const snap = await db.ref('rooms/' + savedRoom + '/players/' + myUserId).once('value');
+        if (snap.exists()) {
+            myRoomId = savedRoom;
+            isHost = !!snap.val().isHost;
+            enterLobby(myRoomId, savedName);
+        }
+        else {
+            localStorage.removeItem('local_roomId');
+        }
+    }
+    catch (e) {
+        console.error("Auto resume failed:", e)
+    }
+}
+
+
+
+TryAutoResume();
+window.addEventListener('load', TryAutoResume);
 
 // Cleanup: Üres szobák törlése
 if (typeof db !== 'undefined') {
