@@ -37,7 +37,7 @@
             }
         });
     </script>
-    <a href="./index.html" class="home-btn" title="Vissza a menübe">🏠</a>
+    <a href="./index.html" class="home-btn" title="Vissza a menübe" onclick="localStorage.setItem('intentional_leave','true')">🏠</a>
     <a href="./szabalyok.html" target="_blank" class="rules-btn" title="Játékszabályok">📖</a>
 
     <h1>ROHANÓ PAKLI</h1>
@@ -131,7 +131,7 @@
             <h2 style="color:#ff4500; font-size:2rem; margin-top:0;">🛑 ELKAPTAK!</h2>
             <p style="color:#aaa;">A hunyók elkapták a bújókat. A játék véget ért.</p>
             <div id="game-over-stats" style="margin:20px 0; font-size:1.1rem;"></div>
-            <button class="primary" onclick="window.location.href='index.html'">Vissza a Lobby-ba</button>
+            <button class="primary" onclick="localStorage.setItem('intentional_leave','true'); window.location.href='index.html'">Vissza a Lobby-ba</button>
         </div>
     </div>
 

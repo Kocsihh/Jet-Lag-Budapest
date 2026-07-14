@@ -227,6 +227,12 @@ function startGame() {
 }
 
 async function TryAutoResume() {
+    // Ha szándékosan léptünk vissza (pl. házikó gombbal), ne csatlakozzunk automatikusan
+    if (skipAutoResume) {
+        console.log("Szándékos visszalépés – auto-reconnect kihagyva.");
+        return;
+    }
+
     const savedName = localStorage.getItem('local_playerName');
     const savedRoom = localStorage.getItem('local_roomId');
 
@@ -254,6 +260,10 @@ async function TryAutoResume() {
 }
 
 
+
+// Ha szándékos visszalépés volt, az auto-reconnect-et egyszer kihagyjuk
+const skipAutoResume = localStorage.getItem('intentional_leave') === 'true';
+if (skipAutoResume) localStorage.removeItem('intentional_leave');
 
 TryAutoResume();
 window.addEventListener('load', TryAutoResume);
